@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+// createTestUser inserts a bare user row directly -- account creation
+// itself (plus Den provisioning) belongs to the workspace package, tested
+// there. This package only needs *a* valid user id to satisfy the
+// sessions table's foreign key.
 func createTestUser(t *testing.T) string {
 	t.Helper()
 	pool := testPool(t)
@@ -13,7 +17,11 @@ func createTestUser(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("randomToken: %v", err)
 	}
-	userID, _, err := GetOrCreateUserBySub(t.Context(), pool, sub, "session-test@example.com")
+	var userID string
+	err = pool.QueryRow(t.Context(),
+		`INSERT INTO users (google_sub, email) VALUES ($1, $2) RETURNING id`,
+		sub, "session-test@example.com",
+	).Scan(&userID)
 	if err != nil {
 		t.Fatalf("create test user: %v", err)
 	}
