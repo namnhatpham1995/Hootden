@@ -19,13 +19,13 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 3. Authentication
 
-- [ ] 3.1 Implement the OAuth start endpoint generating random `state` into a `__Host-` prefixed cookie plus a PKCE challenge, and verify the redirect to Google carries both
-- [ ] 3.2 Implement the callback verifying `state`, exchanging the code, and resolving the user by Google subject identifier, and verify a first-time subject creates a user row while a repeat subject reuses it
-- [ ] 3.3 Issue sessions as 32 random bytes stored as a SHA-256 hash, and verify the `Set-Cookie` carries `Domain=.<domain>`, `HttpOnly`, `Secure`, `SameSite=Lax` and that the raw token appears nowhere in the database
-- [ ] 3.4 Implement session-resolving middleware, with tests covering a valid session, an expired session, and an unknown token
-- [ ] 3.5 Implement sign-out revoking the session server-side, with a test confirming the same token is rejected after sign-out
-- [ ] 3.6 Apply the authentication guard to all non-public routes, and verify unauthenticated requests receive 401 and no workspace or page data
-- [ ] 3.7 Verify the callback rejects a missing, mismatched, or expired `state` without creating a user or session
+- [x] 3.1 Implement the OAuth start endpoint generating random `state` into a `__Host-` prefixed cookie plus a PKCE challenge, and verify the redirect to Google carries both
+- [x] 3.2 Implement the callback verifying `state`, exchanging the code, and resolving the user by Google subject identifier, and verify a first-time subject creates a user row while a repeat subject reuses it
+- [x] 3.3 Issue sessions as 32 random bytes stored as a SHA-256 hash, and verify the `Set-Cookie` carries `Domain=.<domain>`, `HttpOnly`, `Secure`, `SameSite=Lax` and that the raw token appears nowhere in the database
+- [x] 3.4 Implement session-resolving middleware, with tests covering a valid session, an expired session, and an unknown token
+- [x] 3.5 Implement sign-out revoking the session server-side, with a test confirming the same token is rejected after sign-out
+- [ ] 3.6 Apply the authentication guard to all non-public routes, and verify unauthenticated requests receive 401 and no workspace or page data (blocked: no protected routes exist yet -- `RequireAuth` is implemented and tested in isolation; applying it happens as workspace/page endpoints are added in groups 4-6)
+- [x] 3.7 Verify the callback rejects a missing, mismatched, or expired `state` without creating a user or session
 
 ## 4. Workspaces
 
