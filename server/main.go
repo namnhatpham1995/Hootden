@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/namnhatpham1995/Hootden/server/internal/auth"
 	"github.com/namnhatpham1995/Hootden/server/internal/config"
 	"github.com/namnhatpham1995/Hootden/server/internal/db"
 	"github.com/namnhatpham1995/Hootden/server/internal/httpapi"
@@ -28,8 +29,21 @@ func main() {
 	}
 	defer pool.Close()
 
+	oauthConfig := auth.NewOAuthConfig(cfg.GoogleClientID, cfg.GoogleClientSecret, cfg.GoogleRedirectURL)
+	authHandlers := auth.Handlers{
+		Pool:         pool,
+		OAuthConfig:  oauthConfig,
+		Exchanger:    auth.GoogleExchanger{OAuthConfig: oauthConfig},
+		AppOrigin:    cfg.AppOrigin,
+		CookieDomain: cfg.CookieDomain,
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
+	mux.HandleFunc("GET /auth/google/start", authHandlers.Start)
+	mux.HandleFunc("GET /auth/google/callback", authHandlers.Callback)
+	mux.HandleFunc("POST /auth/signout", authHandlers.SignOut)
+	// auth.RequireAuth(pool, cfg.CookieDomain) wraps each protected route as
+	// workspace and page endpoints are added in later task groups.
 
 	var handler http.Handler = mux
 	handler = httpapi.MaxBytes(handler)
