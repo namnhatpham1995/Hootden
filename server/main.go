@@ -8,12 +8,17 @@ import (
 	"github.com/namnhatpham1995/Hootden/server/internal/config"
 	"github.com/namnhatpham1995/Hootden/server/internal/db"
 	"github.com/namnhatpham1995/Hootden/server/internal/httpapi"
+	"github.com/namnhatpham1995/Hootden/server/internal/migrate"
 )
 
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("config: %v", err)
+	}
+
+	if err := migrate.Up(cfg.DatabaseURL); err != nil {
+		log.Fatalf("migrate: %v", err)
 	}
 
 	ctx := context.Background()
