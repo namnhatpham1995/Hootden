@@ -10,6 +10,7 @@ import (
 	"github.com/namnhatpham1995/Hootden/server/internal/db"
 	"github.com/namnhatpham1995/Hootden/server/internal/httpapi"
 	"github.com/namnhatpham1995/Hootden/server/internal/migrate"
+	"github.com/namnhatpham1995/Hootden/server/internal/workspace"
 )
 
 func main() {
@@ -34,16 +35,20 @@ func main() {
 		Pool:         pool,
 		OAuthConfig:  oauthConfig,
 		Exchanger:    auth.GoogleExchanger{OAuthConfig: oauthConfig},
+		UserResolver: workspace.UserResolver{Pool: pool},
 		AppOrigin:    cfg.AppOrigin,
 		CookieDomain: cfg.CookieDomain,
 	}
+	requireAuth := auth.RequireAuth(pool, cfg.CookieDomain)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
 	mux.HandleFunc("GET /auth/google/start", authHandlers.Start)
 	mux.HandleFunc("GET /auth/google/callback", authHandlers.Callback)
 	mux.HandleFunc("POST /auth/signout", authHandlers.SignOut)
-	// auth.RequireAuth(pool, cfg.CookieDomain) wraps each protected route as
-	// workspace and page endpoints are added in later task groups.
+	mux.Handle("GET /me", requireAuth(workspace.Me(pool)))
+	// requireAuth wraps each further protected route as page endpoints are
+	// added in later task groups.
 
 	var handler http.Handler = mux
 	handler = httpapi.MaxBytes(handler)
