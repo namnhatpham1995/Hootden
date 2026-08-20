@@ -24,14 +24,14 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 - [x] 3.3 Issue sessions as 32 random bytes stored as a SHA-256 hash, and verify the `Set-Cookie` carries `Domain=.<domain>`, `HttpOnly`, `Secure`, `SameSite=Lax` and that the raw token appears nowhere in the database
 - [x] 3.4 Implement session-resolving middleware, with tests covering a valid session, an expired session, and an unknown token
 - [x] 3.5 Implement sign-out revoking the session server-side, with a test confirming the same token is rejected after sign-out
-- [ ] 3.6 Apply the authentication guard to all non-public routes, and verify unauthenticated requests receive 401 and no workspace or page data (blocked: no protected routes exist yet -- `RequireAuth` is implemented and tested in isolation; applying it happens as workspace/page endpoints are added in groups 4-6)
+- [x] 3.6 Apply the authentication guard to all non-public routes, and verify unauthenticated requests receive 401 and no workspace or page data (applied to `GET /me` in the workspaces group; continues to apply to page endpoints as they're added in groups 5-6)
 - [x] 3.7 Verify the callback rejects a missing, mismatched, or expired `state` without creating a user or session
 
 ## 4. Workspaces
 
-- [ ] 4.1 Create the personal Den in the same transaction as user creation, and verify a new user has exactly one workspace with `personal = true`
-- [ ] 4.2 Add an endpoint returning the signed-in user and their Den, and verify it resolves from the session cookie alone
-- [ ] 4.3 Implement a shared ownership check used by every page handler, and verify a request for another account's workspace or page returns 404 rather than 403 so existence is not disclosed
+- [x] 4.1 Create the personal Den in the same transaction as user creation, and verify a new user has exactly one workspace with `personal = true`
+- [x] 4.2 Add an endpoint returning the signed-in user and their Den, and verify it resolves from the session cookie alone
+- [x] 4.3 Implement a shared ownership check used by every page handler, and verify a request for another account's workspace or page returns 404 rather than 403 so existence is not disclosed
 
 ## 5. Page tree API
 
