@@ -32,6 +32,7 @@ func main() {
 	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
 
 	var handler http.Handler = mux
+	handler = httpapi.MaxBytes(handler)
 	handler = httpapi.CORS(cfg.AppOrigin, handler)
 
 	log.Printf("listening on :%s", cfg.Port)

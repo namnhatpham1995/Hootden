@@ -15,7 +15,7 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 - [x] 2.3 Wire `goose` migrations from an embedded filesystem, and verify running migrations creates the goose version table
 - [x] 2.4 Write migration 001 creating `users`, `sessions`, `workspaces`, and `pages` per design.md, and verify the self-referencing `pages.parent_id` foreign key cascades by deleting a parent row and confirming descendants are gone
 - [x] 2.5 Add CORS middleware returning the exact app origin with `Access-Control-Allow-Credentials: true`, and verify a preflight `OPTIONS` request returns the expected headers and that `*` is never sent
-- [ ] 2.6 Add a 1 MB `http.MaxBytesReader` limit and a shared JSON error response helper, and verify an oversized body is rejected rather than read into memory
+- [x] 2.6 Add a 1 MB `http.MaxBytesReader` limit and a shared JSON error response helper, and verify an oversized body is rejected rather than read into memory
 
 ## 3. Authentication
 
