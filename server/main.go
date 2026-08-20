@@ -31,6 +31,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
 
+	var handler http.Handler = mux
+	handler = httpapi.CORS(cfg.AppOrigin, handler)
+
 	log.Printf("listening on :%s", cfg.Port)
-	log.Fatal(http.ListenAndServe(":"+cfg.Port, mux))
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, handler))
 }
