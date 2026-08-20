@@ -10,6 +10,7 @@ import (
 	"github.com/namnhatpham1995/Hootden/server/internal/db"
 	"github.com/namnhatpham1995/Hootden/server/internal/httpapi"
 	"github.com/namnhatpham1995/Hootden/server/internal/migrate"
+	"github.com/namnhatpham1995/Hootden/server/internal/page"
 	"github.com/namnhatpham1995/Hootden/server/internal/workspace"
 )
 
@@ -47,8 +48,14 @@ func main() {
 	mux.HandleFunc("GET /auth/google/callback", authHandlers.Callback)
 	mux.HandleFunc("POST /auth/signout", authHandlers.SignOut)
 	mux.Handle("GET /me", requireAuth(workspace.Me(pool)))
-	// requireAuth wraps each further protected route as page endpoints are
-	// added in later task groups.
+
+	pageHandlers := page.Handlers{Pool: pool}
+	mux.Handle("GET /pages", requireAuth(http.HandlerFunc(pageHandlers.List)))
+	mux.Handle("POST /pages", requireAuth(http.HandlerFunc(pageHandlers.Create)))
+	mux.Handle("PATCH /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Update)))
+	mux.Handle("DELETE /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Delete)))
+	// requireAuth wraps each further protected route as page document
+	// endpoints are added in the next task group.
 
 	var handler http.Handler = mux
 	handler = httpapi.MaxBytes(handler)
