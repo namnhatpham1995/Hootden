@@ -10,12 +10,12 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 2. Backend skeleton
 
-- [ ] 2.1 Initialise the Go module and an HTTP server using stdlib `net/http` with a `/healthz` route, and verify it returns 200
-- [ ] 2.2 Add a `pgx/v5` pool configured from environment variables, and verify `/healthz` reports database reachability
-- [ ] 2.3 Wire `goose` migrations from an embedded filesystem, and verify running migrations creates the goose version table
-- [ ] 2.4 Write migration 001 creating `users`, `sessions`, `workspaces`, and `pages` per design.md, and verify the self-referencing `pages.parent_id` foreign key cascades by deleting a parent row and confirming descendants are gone
-- [ ] 2.5 Add CORS middleware returning the exact app origin with `Access-Control-Allow-Credentials: true`, and verify a preflight `OPTIONS` request returns the expected headers and that `*` is never sent
-- [ ] 2.6 Add a 1 MB `http.MaxBytesReader` limit and a shared JSON error response helper, and verify an oversized body is rejected rather than read into memory
+- [x] 2.1 Initialise the Go module and an HTTP server using stdlib `net/http` with a `/healthz` route, and verify it returns 200
+- [x] 2.2 Add a `pgx/v5` pool configured from environment variables, and verify `/healthz` reports database reachability
+- [x] 2.3 Wire `goose` migrations from an embedded filesystem, and verify running migrations creates the goose version table
+- [x] 2.4 Write migration 001 creating `users`, `sessions`, `workspaces`, and `pages` per design.md, and verify the self-referencing `pages.parent_id` foreign key cascades by deleting a parent row and confirming descendants are gone
+- [x] 2.5 Add CORS middleware returning the exact app origin with `Access-Control-Allow-Credentials: true`, and verify a preflight `OPTIONS` request returns the expected headers and that `*` is never sent
+- [x] 2.6 Add a 1 MB `http.MaxBytesReader` limit and a shared JSON error response helper, and verify an oversized body is rejected rather than read into memory
 
 ## 3. Authentication
 

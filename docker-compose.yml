@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hootden
+    ports:
+      - "5432:5432"
+    volumes:
+      - hootden-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  hootden-postgres-data:
