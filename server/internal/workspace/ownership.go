@@ -12,6 +12,21 @@ import (
 // account's workspace or page must never be disclosed.
 var ErrNotFound = errors.New("not found")
 
+// DenIDForUser returns userID's personal workspace. Every account has
+// exactly one, created alongside the account itself (EnsureUserAndDen), so
+// this only fails if userID doesn't exist.
+func DenIDForUser(ctx context.Context, pool *pgxpool.Pool, userID string) (string, error) {
+	var denID string
+	err := pool.QueryRow(ctx,
+		`SELECT id FROM workspaces WHERE owner_id = $1 AND personal = true`,
+		userID,
+	).Scan(&denID)
+	if err != nil {
+		return "", err
+	}
+	return denID, nil
+}
+
 // RequireOwnWorkspace fails with ErrNotFound unless workspaceID exists and
 // is owned by userID.
 func RequireOwnWorkspace(ctx context.Context, pool *pgxpool.Pool, userID, workspaceID string) error {
