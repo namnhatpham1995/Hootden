@@ -1,0 +1,16 @@
+# AI agent tooling — local only, never committed
+.claude/
+.codex/
+.opencode/
+.agents/
+.cursor/
+.windsurf/
+.roo/
+.clinerules/
+.continue/
+.aider*
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.github/copilot-instructions.md
