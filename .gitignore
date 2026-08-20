@@ -14,3 +14,8 @@ CLAUDE.md
 GEMINI.md
 .cursorrules
 .github/copilot-instructions.md
+
+# Environment files (secrets) — never committed
+.env
+.env.*
+!.env.example

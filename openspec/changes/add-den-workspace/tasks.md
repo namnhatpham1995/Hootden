@@ -6,7 +6,7 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 - [ ] 1.2 Create the Google Cloud OAuth client with the authorized redirect URI set to `https://api.<domain>/auth/google/callback`, and verify the client ID and secret are stored as secrets, not committed
 - [ ] 1.3 Create the Railway project with a Postgres instance, and verify a `psql` connection succeeds using the connection string
 - [ ] 1.4 Create the Vercel project linked to the repository, and verify a placeholder deploy is reachable at the apex domain over HTTPS
-- [ ] 1.5 Establish the repo layout (`server/` for Go, `web/` for Next.js) and verify both build with a no-op entry point
+- [x] 1.5 Establish the repo layout (`server/` for Go, `web/` for Next.js) and verify both build with a no-op entry point
 
 ## 2. Backend skeleton
 
