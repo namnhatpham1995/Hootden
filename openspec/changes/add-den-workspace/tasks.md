@@ -35,12 +35,12 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 5. Page tree API
 
-- [ ] 5.1 Implement the tree endpoint returning every page's id, parent, title, and position without document bodies, and verify the response excludes `doc`
-- [ ] 5.2 Implement page creation with optional parent, placeholder title when none is given, and last position among siblings, with a test covering root and nested creation
-- [ ] 5.3 Implement rename, and verify the new title is returned by the tree endpoint
-- [ ] 5.4 Implement the move operation updating parent and position with sibling reindexing inside one transaction, with a test confirming sibling order persists after reorder and after reparent
-- [ ] 5.5 Implement the cycle guard by walking `parent_id` upward, with a test confirming a move under the page's own descendant is refused and the tree is unchanged
-- [ ] 5.6 Implement delete relying on the cascade, with a test confirming a subtree is fully removed
+- [x] 5.1 Implement the tree endpoint returning every page's id, parent, title, and position without document bodies, and verify the response excludes `doc`
+- [x] 5.2 Implement page creation with optional parent, placeholder title when none is given, and last position among siblings, with a test covering root and nested creation
+- [x] 5.3 Implement rename, and verify the new title is returned by the tree endpoint
+- [x] 5.4 Implement the move operation updating parent and position with sibling reindexing inside one transaction, with a test confirming sibling order persists after reorder and after reparent
+- [x] 5.5 Implement the cycle guard by walking `parent_id` upward, with a test confirming a move under the page's own descendant is refused and the tree is unchanged
+- [x] 5.6 Implement delete relying on the cascade, with a test confirming a subtree is fully removed
 
 ## 6. Page document API
 
