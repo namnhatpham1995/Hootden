@@ -52,10 +52,9 @@ func main() {
 	pageHandlers := page.Handlers{Pool: pool}
 	mux.Handle("GET /pages", requireAuth(http.HandlerFunc(pageHandlers.List)))
 	mux.Handle("POST /pages", requireAuth(http.HandlerFunc(pageHandlers.Create)))
+	mux.Handle("GET /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Get)))
 	mux.Handle("PATCH /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Update)))
 	mux.Handle("DELETE /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Delete)))
-	// requireAuth wraps each further protected route as page document
-	// endpoints are added in the next task group.
 
 	var handler http.Handler = mux
 	handler = httpapi.MaxBytes(handler)

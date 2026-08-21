@@ -42,6 +42,7 @@ func newMux(pool *pgxpool.Pool) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("GET /pages", requireAuth(http.HandlerFunc(h.List)))
 	mux.Handle("POST /pages", requireAuth(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /pages/{id}", requireAuth(http.HandlerFunc(h.Get)))
 	mux.Handle("PATCH /pages/{id}", requireAuth(http.HandlerFunc(h.Update)))
 	mux.Handle("DELETE /pages/{id}", requireAuth(http.HandlerFunc(h.Delete)))
 	return mux
@@ -116,6 +117,81 @@ func TestHandlers_Delete_AnotherAccountsPage_404(t *testing.T) {
 	}
 	if len(nodes) != 1 {
 		t.Errorf("got %d nodes, want the page to still exist", len(nodes))
+	}
+}
+
+func TestHandlers_Get_AnotherAccountsPage_404(t *testing.T) {
+	pool := testPool(t)
+	_, otherDenID := testDen(t)
+	otherPage, err := Create(t.Context(), pool, otherDenID, "", "Someone else's page")
+	if err != nil {
+		t.Fatalf("create other page: %v", err)
+	}
+
+	callerID, _ := testDen(t)
+	req := sessionRequest(t, pool, callerID, http.MethodGet, "/pages/"+otherPage.ID, nil)
+	rec := httptest.NewRecorder()
+	newMux(pool).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusNotFound)
+	}
+}
+
+func TestHandlers_Update_SavesDoc(t *testing.T) {
+	pool := testPool(t)
+	callerID, denID := testDen(t)
+	created, err := Create(t.Context(), pool, denID, "", "My Page")
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	req := sessionRequest(t, pool, callerID, http.MethodPatch, "/pages/"+created.ID, map[string]any{
+		"doc": map[string]any{"type": "doc"},
+	})
+	rec := httptest.NewRecorder()
+	newMux(pool).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNoContent)
+	}
+
+	p, err := Get(t.Context(), pool, created.ID)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if !docEqual(t, p.Doc, `{"type":"doc"}`) {
+		t.Errorf("doc = %s, want the saved document", p.Doc)
+	}
+}
+
+func TestHandlers_Update_MalformedDoc_RejectedWithoutWriting(t *testing.T) {
+	pool := testPool(t)
+	callerID, denID := testDen(t)
+	created, err := Create(t.Context(), pool, denID, "", "My Page")
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	rawToken, err := auth.CreateSession(t.Context(), pool, callerID)
+	if err != nil {
+		t.Fatalf("CreateSession: %v", err)
+	}
+	req := httptest.NewRequest(http.MethodPatch, "/pages/"+created.ID, bytes.NewReader([]byte(`{"doc": {not valid json}}`)))
+	req.AddCookie(&http.Cookie{Name: auth.SessionCookieName, Value: rawToken})
+	rec := httptest.NewRecorder()
+	newMux(pool).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+
+	p, err := Get(t.Context(), pool, created.ID)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if string(p.Doc) != "{}" {
+		t.Errorf("doc = %s, want unchanged empty document", p.Doc)
 	}
 }
 
