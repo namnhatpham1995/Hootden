@@ -31,18 +31,32 @@ func (f *fakeExchanger) Exchange(ctx context.Context, code, codeVerifier string)
 	return f.sub, f.email, f.err
 }
 
-func newTestHandlers(pool *pgxpool.Pool, exch Exchanger) Handlers {
+// fakeUserResolver stands in for workspace.UserResolver, which this
+// package must not import (see resolver.go).
+type fakeUserResolver struct {
+	userID string
+	err    error
+}
+
+func (f fakeUserResolver) ResolveUser(ctx context.Context, googleSub, email string) (string, error) {
+	return f.userID, f.err
+}
+
+var errBoom = errors.New("boom")
+
+func newTestHandlers(pool *pgxpool.Pool, exch Exchanger, resolver UserResolver) Handlers {
 	return Handlers{
 		Pool:         pool,
 		OAuthConfig:  NewOAuthConfig("test-client-id", "test-client-secret", "https://api.hootden.example/auth/google/callback"),
 		Exchanger:    exch,
+		UserResolver: resolver,
 		AppOrigin:    "https://hootden.example",
 		CookieDomain: testCookieDomain,
 	}
 }
 
 func TestStart_RedirectsWithStateAndPKCE(t *testing.T) {
-	h := newTestHandlers(nil, nil)
+	h := newTestHandlers(nil, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/google/start", nil)
 	rec := httptest.NewRecorder()
@@ -92,7 +106,7 @@ func TestStart_RedirectsWithStateAndPKCE(t *testing.T) {
 
 func TestCallback_MissingState_ExchangeNeverCalled(t *testing.T) {
 	exch := &fakeExchanger{t: t, wantCalled: false}
-	h := newTestHandlers(nil, exch)
+	h := newTestHandlers(nil, exch, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/google/callback?state=abc&code=xyz", nil)
 	rec := httptest.NewRecorder()
@@ -105,7 +119,7 @@ func TestCallback_MissingState_ExchangeNeverCalled(t *testing.T) {
 
 func TestCallback_MismatchedState_ExchangeNeverCalled(t *testing.T) {
 	exch := &fakeExchanger{t: t, wantCalled: false}
-	h := newTestHandlers(nil, exch)
+	h := newTestHandlers(nil, exch, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/google/callback?state=wrong&code=xyz", nil)
 	req.AddCookie(&http.Cookie{Name: stateCookieName, Value: "expected"})
@@ -120,7 +134,7 @@ func TestCallback_MismatchedState_ExchangeNeverCalled(t *testing.T) {
 
 func TestCallback_Declined_ExchangeNeverCalled(t *testing.T) {
 	exch := &fakeExchanger{t: t, wantCalled: false}
-	h := newTestHandlers(nil, exch)
+	h := newTestHandlers(nil, exch, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/google/callback?error=access_denied", nil)
 	rec := httptest.NewRecorder()
@@ -134,14 +148,17 @@ func TestCallback_Declined_ExchangeNeverCalled(t *testing.T) {
 	}
 }
 
+// TestCallback_Success_CreatesUserAndSession checks that a valid callback
+// threads the resolver's user id into the issued session. Whether that
+// user id came from a fresh account or an existing one is the workspace
+// package's concern (workspace.EnsureUserAndDen), not this handler's --
+// tested there.
 func TestCallback_Success_CreatesUserAndSession(t *testing.T) {
 	pool := testPool(t)
-	sub, err := randomToken()
-	if err != nil {
-		t.Fatalf("randomToken: %v", err)
-	}
-	exch := &fakeExchanger{t: t, wantCalled: true, sub: sub, email: "new@example.com"}
-	h := newTestHandlers(pool, exch)
+	userID := createTestUser(t)
+	exch := &fakeExchanger{t: t, wantCalled: true, sub: "google-sub-doesnt-matter-here", email: "new@example.com"}
+	resolver := fakeUserResolver{userID: userID}
+	h := newTestHandlers(pool, exch, resolver)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/google/callback?state=s&code=c", nil)
 	req.AddCookie(&http.Cookie{Name: stateCookieName, Value: "s"})
@@ -169,17 +186,34 @@ func TestCallback_Success_CreatesUserAndSession(t *testing.T) {
 		t.Fatal("expected a session cookie to be set")
 	}
 
-	userID, err := ResolveSession(t.Context(), pool, sessionToken)
+	gotUserID, err := ResolveSession(t.Context(), pool, sessionToken)
 	if err != nil {
 		t.Fatalf("ResolveSession: %v", err)
 	}
-
-	var storedSub string
-	if err := pool.QueryRow(t.Context(), `SELECT google_sub FROM users WHERE id = $1`, userID).Scan(&storedSub); err != nil {
-		t.Fatalf("query created user: %v", err)
+	if gotUserID != userID {
+		t.Errorf("session user = %q, want %q (the resolver's user id)", gotUserID, userID)
 	}
-	if storedSub != sub {
-		t.Errorf("stored google_sub = %q, want %q", storedSub, sub)
+}
+
+func TestCallback_ResolverError_NoSessionIssued(t *testing.T) {
+	pool := testPool(t)
+	exch := &fakeExchanger{t: t, wantCalled: true, sub: "sub", email: "e@example.com"}
+	resolver := fakeUserResolver{err: errBoom}
+	h := newTestHandlers(pool, exch, resolver)
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/google/callback?state=s&code=c", nil)
+	req.AddCookie(&http.Cookie{Name: stateCookieName, Value: "s"})
+	req.AddCookie(&http.Cookie{Name: verifierCookieName, Value: "v"})
+	rec := httptest.NewRecorder()
+	h.Callback(rec, req)
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
+	}
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == SessionCookieName && c.MaxAge > 0 {
+			t.Error("no session cookie should be set when the resolver fails")
+		}
 	}
 }
 
@@ -190,7 +224,7 @@ func TestSignOut_RevokesSession(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateSession: %v", err)
 	}
-	h := newTestHandlers(pool, nil)
+	h := newTestHandlers(pool, nil, nil)
 
 	req := withSessionCookie(httptest.NewRequest(http.MethodPost, "/auth/signout", nil), rawToken)
 	rec := httptest.NewRecorder()

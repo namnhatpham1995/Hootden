@@ -13,6 +13,7 @@ type Handlers struct {
 	Pool         *pgxpool.Pool
 	OAuthConfig  *oauth2.Config
 	Exchanger    Exchanger
+	UserResolver UserResolver
 	AppOrigin    string
 	CookieDomain string
 }
@@ -72,7 +73,7 @@ func (h Handlers) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _, err := GetOrCreateUserBySub(r.Context(), h.Pool, sub, email)
+	userID, err := h.UserResolver.ResolveUser(r.Context(), sub, email)
 	if err != nil {
 		httpapi.WriteJSONError(w, http.StatusInternalServerError, "sign-in failed")
 		return
