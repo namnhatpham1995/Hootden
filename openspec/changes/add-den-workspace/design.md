@@ -6,6 +6,7 @@ See `proposal.md` — Why for motivation. Two constraints shape the approach:
 
 - **The product this becomes is multi-user.** Shared workspaces, real-time sync, and a mobile surface are all planned and all excluded from this version. The design must avoid choices that would have to be undone, without building any of them.
 - **The frontend and backend are deployed to different platforms.** Next.js on Vercel, Go on Railway. They are therefore different origins, which makes session delivery the one genuinely load-bearing decision in this change.
+- **Railway and Vercel are the first deploy target, not the only one.** The same repository must also run as a self-hosted Docker Compose stack, on a rented VPS or on a personal machine, without a second codebase or a fork. Every deploy-facing decision (the domain/cookie shape, the container images) is made to hold across all three targets, not just the managed one.
 
 ## Goals / Non-Goals
 
@@ -21,7 +22,7 @@ See `proposal.md` — Why for motivation. Two constraints shape the approach:
 - No abstraction layers anticipating features in the non-goals list. No `Workspace` interface with one implementation, no permission framework for a single permission, no sync layer with one transport.
 - No marketing site. The signed-out state is a single screen with a sign-in button; a real landing page comes with the public push.
 - No mobile layout work. Responsive enough not to be broken, not designed for phones.
-- No test infrastructure beyond what the logic warrants — the tree operations and the session lifecycle get tests; CRUD passthrough does not.
+- No *unit* test infrastructure beyond what the logic warrants — the tree operations and the session lifecycle get tests; CRUD passthrough does not. This does not extend to end-to-end coverage, see the Playwright decision below.
 
 ## Decisions
 
@@ -113,10 +114,28 @@ The signed-out screen is server-rendered. Everything behind auth is client-rende
 
 The project's anti-slop rules apply directly here, and "cute" is where generic defaults are strongest. The deliberate departures:
 
-- **Warm dark as the default surface.** Base is a deep bark brown — not slate, not near-black. A den is dark and warm; the near-universal choice for a cute app is light pastel, so this is the intentional divergence. One dominant colour, one real accent (honey/amber), with a dusk blue used sparingly for owl-side accents. No gradient headings, no glow shadows.
+- **Light and dark are both first-class, light is the default.** Every colour is a token pair (e.g. `--surface-light` / `--surface-dark`), not a dark palette with a light palette bolted on later — building both together is the same token work as building one plus roughly a third more, versus a second pass through every component if dark were added after the fact. Base surface is warm paper in light mode, deep bark brown in dark — neither slate nor near-black in either mode, and neither the generic cute-app pastel nor a generic developer-tool dark. One dominant colour, one real accent (honey/amber), with a dusk blue used sparingly for owl-side accents, in both modes. No gradient headings, no glow shadows.
 - **Three-step type scale, not one family.** Display in Fredoka (carries the chibi register), UI in Nunito Sans (rounded, legible, quiet), document body in Lora — a reading app earns a reading serif, and it is the choice competitors do not make.
-- **Mascots built from six to eight primitive shapes each.** Bear and owl are constructed geometrically rather than illustrated or generated. This guarantees they read at 24 px and in one colour, exports cleanly to SVG, and avoids the tells of generated artwork.
+- **Mascots built from six to eight primitive shapes each.** Bear and owl are constructed geometrically rather than illustrated or generated. This guarantees they read at 24 px and in one colour, exports cleanly to SVG, and avoids the tells of generated artwork. Built as outline shapes with a fill token, not a baked-in colour, so they render correctly in both themes without a second asset.
 - **Mascot placement is restricted** to empty states, loading, avatar fallback, and the favicon. Not feature icons, not on cards. An empty workspace showing a sleeping bear turns "nothing here" into "not yet"; a mascot on every surface becomes wallpaper.
+
+### Docker images for every deploy target, Vercel's own pipeline for its own target
+
+`server/Dockerfile` (multi-stage Go build, small final image) and `web/Dockerfile` (Next.js with `output: 'standalone'` in `next.config.ts`, so the image doesn't carry the full `node_modules` tree) let the same repository run as a `docker compose` stack on a VPS or a personal machine. `docker-compose.yml` gains a full-stack profile alongside the existing dev-only Postgres service.
+
+Vercel does not build from a Dockerfile — it uses its own Next.js build pipeline regardless of one being present, so adding one costs the managed path nothing. Railway can build a Go service from a Dockerfile directly, so the same image serves both Railway and self-hosted Docker without divergence. No target requires its own fork of the build.
+
+**Alternative rejected — a separate deployment repo or config per target.** Would drift the moment either copy changes. One set of images, three ways to run them (Vercel's pipeline for Next.js; Railway building the Go Dockerfile; `docker compose` for everything self-hosted) keeps the deployable artifact singular.
+
+### Playwright E2E for the flows a unit test can't see
+
+Unit and integration tests (already in place for the backend) verify individual functions and handlers in isolation. They cannot catch a wiring failure across the frontend/backend boundary — a cookie that never gets sent, a form that never calls the endpoint it's bound to. Playwright covers exactly the flows named as safety-critical: sign-in, page CRUD, drag-reorder, and autosave.
+
+**Google's real consent screen cannot be driven by an automated browser** — bot detection, real credentials, and potentially 2FA make it unreliable even as a flake-prone test, not just a security concern. Authenticated E2E tests seed a session directly: insert a user and Den row and a valid session row into Postgres, set the resulting session cookie, and start the browser already signed in. This exercises the same `RequireAuth` code path a real session would, without a bypass endpoint that could ever be reachable outside tests.
+
+**Alternative rejected — a test-only auth bypass endpoint gated by an environment flag.** One misconfigured environment variable in production turns a testing convenience into an authentication bypass. Seeding the database directly has no such failure mode: there is no code path in the shipped binary that skips authentication, tests or otherwise.
+
+This pairs naturally with the Docker work above: the full-stack `docker compose` profile that self-hosting needs is the same stack Playwright runs its suite against in CI.
 
 ## Risks / Trade-offs
 
@@ -128,20 +147,24 @@ The project's anti-slop rules apply directly here, and "cute" is where generic d
 
 **Google-only sign-in means a lost Google account is a lost Hootden account** → Accepted. There is no recovery path and no second factor to fall back on because there is no password. Adding a second provider linked by verified email addresses this later without changing the session design.
 
-**Single Railway instance; sessions and data are in Postgres** → Restarts and redeploys are safe; nothing session-related lives in process memory. This is only true because there is no real-time transport in this version — the moment SSE arrives, in-process subscriber state exists and multi-instance becomes a real question.
+**Single instance on whichever target is running, sessions and data are in Postgres** → Restarts, redeploys, and switching between Railway/VPS/personal-machine are all safe; nothing session-related lives in process memory, so no deploy target is special-cased. This is only true because there is no real-time transport in this version — the moment SSE arrives, in-process subscriber state exists and multi-instance becomes a real question, regardless of which target it's running on.
+
+**Three deploy targets means three places a misconfiguration can hide** → Mitigated by keeping the container images identical across targets (see the Docker decision above) — only environment variables differ, never the build. The domain/cookie shape is also target-agnostic by design (session cookie's `Domain` covers the apex + `api.` subdomain regardless of what's hosting either).
 
 **Self-imposed constraint: no state-changing `GET`** → Easy to violate accidentally, and the failure is silent (a working endpoint with a CSRF hole). Worth a review check rather than a framework.
 
 ## Migration Plan
 
-Greenfield; there is no existing system, no data to migrate, and no rollback target. Deployment is ordered by dependency:
+Greenfield; there is no existing system, no data to migrate, and no rollback target. Deployment is ordered by dependency, for the initial (Railway + Vercel) target:
 
 1. Register the domain. Everything downstream encodes it.
 2. Create the Google Cloud OAuth client with the final `api.` redirect URI.
 3. Provision Railway Postgres; run migrations via goose.
-4. Deploy the Go service to Railway; bind `api.` to it.
-5. Deploy Next.js to Vercel; bind the apex to it.
+4. Deploy the Go service to Railway (building `server/Dockerfile`); bind `api.` to it.
+5. Deploy Next.js to Vercel (its own build pipeline, not the Dockerfile); bind the apex to it.
 6. Verify the session end to end in iOS Safari with third-party cookies blocked, before anything else is built on top of auth.
+
+Self-hosting on a VPS or personal machine follows the same domain/OAuth-client setup (steps 1-2), then substitutes `docker compose up` against the full-stack profile for steps 3-5 — same images, same migrations, same environment-variable contract, just one host instead of two managed platforms.
 
 Migrations are forward-only in practice; goose `down` exists as a development escape hatch, not a production rollback strategy.
 
@@ -152,3 +175,4 @@ Deferrable without changing the specs, the approach, or the task breakdown:
 - The exact domain name. It is configuration; the design depends only on it being one registrable domain with an `api.` subdomain.
 - Railway and Vercel hosting regions.
 - Whether the second identity provider (likely GitHub) arrives with the public push or later. The account model already keys on provider subject, so it changes nothing here.
+- The reverse proxy / TLS termination for self-hosted Docker Compose (VPS or personal machine) — Caddy, nginx, or Traefik. Doesn't affect the images or the application code either way, only the deploy-time compose/proxy config for that target.
