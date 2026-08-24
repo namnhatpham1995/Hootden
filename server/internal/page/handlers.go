@@ -46,6 +46,26 @@ func (h Handlers) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nodes)
 }
 
+// Get returns a single page including its document body.
+func (h Handlers) Get(w http.ResponseWriter, r *http.Request) {
+	userID := auth.UserID(r.Context())
+	pageID := r.PathValue("id")
+
+	if err := workspace.RequireOwnPage(r.Context(), h.Pool, userID, pageID); err != nil {
+		writeOwnershipError(w, err)
+		return
+	}
+
+	p, err := Get(r.Context(), h.Pool, pageID)
+	if err != nil {
+		httpapi.WriteJSONError(w, http.StatusInternalServerError, "failed to load page")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(p)
+}
+
 type createRequest struct {
 	ParentID string `json:"parent_id"`
 	Title    string `json:"title"`
@@ -84,9 +104,10 @@ func (h Handlers) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 type updateRequest struct {
-	Title    *string `json:"title,omitempty"`
-	ParentID *string `json:"parent_id,omitempty"`
-	Position *int    `json:"position,omitempty"`
+	Title    *string         `json:"title,omitempty"`
+	ParentID *string         `json:"parent_id,omitempty"`
+	Position *int            `json:"position,omitempty"`
+	Doc      json.RawMessage `json:"doc,omitempty"`
 }
 
 // Update renames and/or moves a page, either independently or together in
@@ -109,6 +130,13 @@ func (h Handlers) Update(w http.ResponseWriter, r *http.Request) {
 	if req.Title != nil {
 		if err := Rename(r.Context(), h.Pool, pageID, *req.Title); err != nil {
 			httpapi.WriteJSONError(w, http.StatusInternalServerError, "failed to rename page")
+			return
+		}
+	}
+
+	if req.Doc != nil {
+		if err := SaveDoc(r.Context(), h.Pool, pageID, req.Doc); err != nil {
+			httpapi.WriteJSONError(w, http.StatusInternalServerError, "failed to save document")
 			return
 		}
 	}

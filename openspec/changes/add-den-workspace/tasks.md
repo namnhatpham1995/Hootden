@@ -44,9 +44,9 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 6. Page document API
 
-- [ ] 6.1 Implement fetching a single page's document, and verify it returns an empty document for a newly created page
-- [ ] 6.2 Implement document save with well-formed JSON validation ahead of storage, and verify malformed JSON is rejected without writing
-- [ ] 6.3 Update `updated_at` on save and confirm last-write-wins by issuing two saves and verifying the later one is stored intact rather than merged
+- [x] 6.1 Implement fetching a single page's document, and verify it returns an empty document for a newly created page
+- [x] 6.2 Implement document save with well-formed JSON validation ahead of storage, and verify malformed JSON is rejected without writing
+- [x] 6.3 Update `updated_at` on save and confirm last-write-wins by issuing two saves and verifying the later one is stored intact rather than merged
 
 ## 7. Frontend foundation and visual system
 
