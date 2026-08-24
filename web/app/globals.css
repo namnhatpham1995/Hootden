@@ -1,17 +1,63 @@
+/*
+ * Design tokens as light/dark pairs. Light is the default surface; dark
+ * overrides via prefers-color-scheme now and via [data-theme="dark"] once
+ * the theme toggle (task 8.5) sets it explicitly.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --surface: #faf6ef;
+  --surface-raised: #ffffff;
+  --foreground: #2b2320;
+  --foreground-muted: #6b5f56;
+  --accent: #c97e1f;
+  --accent-foreground: #2b2320;
+  --secondary: #3d6b8a;
+  --border: #e6dccb;
+
+  --font-display: var(--font-fredoka), ui-rounded, "Segoe UI Rounded", system-ui, sans-serif;
+  --font-ui: var(--font-nunito-sans), -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-lora), Georgia, "Times New Roman", serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --surface: #241c17;
+    --surface-raised: #2f2620;
+    --foreground: #f2e9df;
+    --foreground-muted: #b5a89a;
+    --accent: #e5a53f;
+    --accent-foreground: #241c17;
+    --secondary: #7fb2d1;
+    --border: #3c2f27;
   }
+}
+
+:root[data-theme="dark"] {
+  --surface: #241c17;
+  --surface-raised: #2f2620;
+  --foreground: #f2e9df;
+  --foreground-muted: #b5a89a;
+  --accent: #e5a53f;
+  --accent-foreground: #241c17;
+  --secondary: #7fb2d1;
+  --border: #3c2f27;
 }
 
 html {
   height: 100%;
+  color-scheme: light dark;
 }
 
 html,
@@ -25,8 +71,8 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--surface);
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,10 +86,4 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

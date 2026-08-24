@@ -50,11 +50,11 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 7. Frontend foundation and visual system
 
-- [ ] 7.1 Scaffold the Next.js App Router project, and verify the dev server renders a placeholder route
-- [ ] 7.2 Define design tokens as light/dark pairs (warm paper / bark-brown surface, honey accent, dusk-blue secondary), light as the default, plus spacing and a varied radius scale, and verify both themes on a style reference route
-- [ ] 7.3 Load Fredoka, Nunito Sans, and Lora with real fallback stacks, and verify each renders at its intended role rather than falling back
-- [ ] 7.4 Build the bear and owl marks as SVGs composed of primitive shapes using a theme fill token, and verify each stays legible at 24 px and in a single flat colour in both themes
-- [ ] 7.5 Build the API client sending `credentials: 'include'` with shared error handling, and verify a 401 response routes to the signed-out state
+- [x] 7.1 Scaffold the Next.js App Router project, and verify the dev server renders a placeholder route
+- [x] 7.2 Define design tokens as light/dark pairs (warm paper / bark-brown surface, honey accent, dusk-blue secondary), light as the default, plus spacing and a varied radius scale, and verify both themes on a style reference route
+- [x] 7.3 Load Fredoka, Nunito Sans, and Lora with real fallback stacks, and verify each renders at its intended role rather than falling back
+- [x] 7.4 Build the bear and owl marks as SVGs composed of primitive shapes using a theme fill token, and verify each stays legible at 24 px and in a single flat colour in both themes
+- [x] 7.5 Build the API client sending `credentials: 'include'` with shared error handling, and verify a 401 response routes to the signed-out state
 
 ## 8. Frontend authentication and shell
 
