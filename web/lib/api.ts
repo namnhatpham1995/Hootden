@@ -1,4 +1,4 @@
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:8080";
+export const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:8080";
 
 export class ApiError extends Error {
   status: number;
@@ -49,3 +49,24 @@ export const api = {
     apiFetch<T>(path, { method: "PATCH", body: body !== undefined ? JSON.stringify(body) : undefined }),
   delete: <T>(path: string) => apiFetch<T>(path, { method: "DELETE" }),
 };
+
+export type Me = {
+  id: string;
+  email: string;
+  workspace: { id: string };
+};
+
+// getCurrentUser is the one caller that must NOT use apiFetch's 401 handling
+// -- an unauthenticated response here is the expected signed-out state, not
+// an error to bounce away from, since this is what decides whether to show
+// the landing screen or the Den in the first place.
+export async function getCurrentUser(): Promise<Me | null> {
+  const res = await fetch(`${API_ORIGIN}/me`, { credentials: "include" });
+  if (res.status === 401) {
+    return null;
+  }
+  if (!res.ok) {
+    throw new ApiError(res.status, "failed to load account");
+  }
+  return res.json();
+}
