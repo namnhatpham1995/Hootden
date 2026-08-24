@@ -58,11 +58,11 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 8. Frontend authentication and shell
 
-- [ ] 8.1 Build the signed-out landing screen, and verify the sign-in control reaches Google's consent page
-- [ ] 8.2 Handle the post-callback return by loading the current user and entering the Den, and verify a fresh account lands in an empty workspace with no setup step
-- [ ] 8.3 Add the sign-out control, and verify it returns to the signed-out state and that a reload does not restore the session
-- [ ] 8.4 Build the app shell with sidebar and content region, and verify no workspace switcher, create, or delete affordance is present
-- [ ] 8.5 Add a light/dark theme toggle to the shell, persisted locally, and verify it switches every token-driven surface (including the mascots' theme fill) with no unstyled flash on reload
+- [x] 8.1 Build the signed-out landing screen, and verify the sign-in control reaches Google's consent page
+- [x] 8.2 Handle the post-callback return by loading the current user and entering the Den, and verify a fresh account lands in an empty workspace with no setup step
+- [x] 8.3 Add the sign-out control, and verify it returns to the signed-out state and that a reload does not restore the session
+- [x] 8.4 Build the app shell with sidebar and content region, and verify no workspace switcher, create, or delete affordance is present
+- [x] 8.5 Add a light/dark theme toggle to the shell, persisted locally, and verify it switches every token-driven surface (including the mascots' theme fill) with no unstyled flash on reload
 
 ## 9. Page tree UI
 
