@@ -109,6 +109,6 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 14. Documentation
 
-- [ ] 14.1 Update `README.md` with setup, environment variables, and how to run the Go service and Next.js app locally, and verify a clean clone can reach a running app by following it
-- [ ] 14.2 Document all three deploy paths (Railway + Vercel, self-hosted Docker Compose on a VPS, Docker Compose on a personal machine) including what differs between them (DNS/reverse-proxy setup for self-hosting) and what doesn't (the images, the environment-variable contract), and verify someone unfamiliar with the project could follow either path
+- [x] 14.1 Update `README.md` with setup, environment variables, and how to run the Go service and Next.js app locally, and verify a clean clone can reach a running app by following it
+- [x] 14.2 Document all three deploy paths (Railway + Vercel, self-hosted Docker Compose on a VPS, Docker Compose on a personal machine) including what differs between them (DNS/reverse-proxy setup for self-hosting) and what doesn't (the images, the environment-variable contract), and verify someone unfamiliar with the project could follow either path
 
