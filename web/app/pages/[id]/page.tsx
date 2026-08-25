@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import { Den } from "@/components/Den";
+import { Editor } from "@/components/Editor";
 
 export default function PageRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -11,13 +12,11 @@ export default function PageRoute({ params }: { params: Promise<{ id: string }> 
       {(pages) => {
         const current = pages.find((p) => p.id === id);
         return (
-          <div style={{ padding: "var(--space-8)", maxWidth: "70ch" }}>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2rem" }}>
+          <div style={{ padding: "var(--space-8)", maxWidth: "70ch", width: "100%" }}>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", marginBottom: "var(--space-4)" }}>
               {current?.title || "Untitled"}
             </h1>
-            <p style={{ color: "var(--foreground-muted)" }}>
-              The page editor lands in a later task group -- for now this just confirms the page opened.
-            </p>
+            <Editor key={id} pageId={id} />
           </div>
         );
       }}
