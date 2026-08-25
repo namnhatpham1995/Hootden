@@ -45,7 +45,7 @@ func randomSub(t *testing.T) string {
 func testDen(t *testing.T) (string, string) {
 	t.Helper()
 	pool := testPool(t)
-	userID, denID, _, err := workspace.EnsureUserAndDen(t.Context(), pool, randomSub(t), "page-test@example.com")
+	userID, denID, _, err := workspace.EnsureUserAndDen(t.Context(), pool, randomSub(t), randomSub(t)+"@example.com")
 	if err != nil {
 		t.Fatalf("testDen setup: %v", err)
 	}

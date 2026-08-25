@@ -41,3 +41,11 @@ func randomSub(t *testing.T) string {
 	}
 	return base64.RawURLEncoding.EncodeToString(b)
 }
+
+// randomEmail returns a unique email so tests don't collide on the
+// users.email UNIQUE constraint, whether within one run or across repeated
+// runs against a persisted dev database.
+func randomEmail(t *testing.T) string {
+	t.Helper()
+	return randomSub(t) + "@example.com"
+}
