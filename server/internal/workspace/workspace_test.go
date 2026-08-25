@@ -5,8 +5,9 @@ import "testing"
 func TestEnsureUserAndDen_FirstSignIn(t *testing.T) {
 	pool := testPool(t)
 	sub := randomSub(t)
+	email := randomEmail(t)
 
-	userID, denID, isNew, err := EnsureUserAndDen(t.Context(), pool, sub, "a@example.com")
+	userID, denID, isNew, err := EnsureUserAndDen(t.Context(), pool, sub, email)
 	if err != nil {
 		t.Fatalf("EnsureUserAndDen: %v", err)
 	}
@@ -36,8 +37,9 @@ func TestEnsureUserAndDen_FirstSignIn(t *testing.T) {
 func TestEnsureUserAndDen_ReturningSignInReusesDen(t *testing.T) {
 	pool := testPool(t)
 	sub := randomSub(t)
+	email := randomEmail(t)
 
-	userID1, denID1, isNew1, err := EnsureUserAndDen(t.Context(), pool, sub, "a@example.com")
+	userID1, denID1, isNew1, err := EnsureUserAndDen(t.Context(), pool, sub, email)
 	if err != nil {
 		t.Fatalf("first call: %v", err)
 	}
@@ -45,7 +47,7 @@ func TestEnsureUserAndDen_ReturningSignInReusesDen(t *testing.T) {
 		t.Fatal("first call: isNew = false, want true")
 	}
 
-	userID2, denID2, isNew2, err := EnsureUserAndDen(t.Context(), pool, sub, "a@example.com")
+	userID2, denID2, isNew2, err := EnsureUserAndDen(t.Context(), pool, sub, email)
 	if err != nil {
 		t.Fatalf("second call: %v", err)
 	}

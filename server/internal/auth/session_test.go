@@ -17,10 +17,14 @@ func createTestUser(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("randomToken: %v", err)
 	}
+	email, err := randomToken()
+	if err != nil {
+		t.Fatalf("randomToken: %v", err)
+	}
 	var userID string
 	err = pool.QueryRow(t.Context(),
 		`INSERT INTO users (google_sub, email) VALUES ($1, $2) RETURNING id`,
-		sub, "session-test@example.com",
+		sub, email+"@example.com",
 	).Scan(&userID)
 	if err != nil {
 		t.Fatalf("create test user: %v", err)

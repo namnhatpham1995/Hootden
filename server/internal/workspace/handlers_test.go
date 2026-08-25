@@ -15,7 +15,8 @@ import (
 // cookie alone".
 func TestMe_ResolvesFromSessionCookieAlone(t *testing.T) {
 	pool := testPool(t)
-	userID, denID, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), "me-test@example.com")
+	email := randomEmail(t)
+	userID, denID, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), email)
 	if err != nil {
 		t.Fatalf("setup: %v", err)
 	}
@@ -47,8 +48,8 @@ func TestMe_ResolvesFromSessionCookieAlone(t *testing.T) {
 	if body.ID != userID {
 		t.Errorf("id = %q, want %q", body.ID, userID)
 	}
-	if body.Email != "me-test@example.com" {
-		t.Errorf("email = %q, want %q", body.Email, "me-test@example.com")
+	if body.Email != email {
+		t.Errorf("email = %q, want %q", body.Email, email)
 	}
 	if body.Workspace.ID != denID {
 		t.Errorf("workspace.id = %q, want %q", body.Workspace.ID, denID)

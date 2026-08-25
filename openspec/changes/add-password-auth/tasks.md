@@ -1,7 +1,7 @@
 ## 1. Data model
 
-- [ ] 1.1 Write migration `0002_password_auth.sql`: add `password_hash TEXT NULL` to `users`, drop `NOT NULL` on `google_sub`, add `CHECK (google_sub IS NOT NULL OR password_hash IS NOT NULL)`, add a `UNIQUE` index on `email`, and verify a password-only row (`google_sub` null) inserts cleanly while a row with neither set is rejected by the check constraint
-- [ ] 1.2 Add the `golang.org/x/crypto/bcrypt` dependency, and verify `go build ./...` succeeds with it in `go.mod`/`go.sum`
+- [x] 1.1 Write migration `0002_password_auth.sql`: add `password_hash TEXT NULL` to `users`, drop `NOT NULL` on `google_sub`, add `CHECK (google_sub IS NOT NULL OR password_hash IS NOT NULL)`, add a `UNIQUE` index on `email`, and verify a password-only row (`google_sub` null) inserts cleanly while a row with neither set is rejected by the check constraint
+- [x] 1.2 Add the `golang.org/x/crypto/bcrypt` dependency, and verify `go build ./...` succeeds with it in `go.mod`/`go.sum`
 
 ## 2. Registration and login
 

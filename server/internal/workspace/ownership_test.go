@@ -7,11 +7,11 @@ import (
 
 func TestRequireOwnWorkspace(t *testing.T) {
 	pool := testPool(t)
-	ownerID, denID, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), "owner@example.com")
+	ownerID, denID, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), randomEmail(t))
 	if err != nil {
 		t.Fatalf("setup owner: %v", err)
 	}
-	otherID, _, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), "other@example.com")
+	otherID, _, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), randomEmail(t))
 	if err != nil {
 		t.Fatalf("setup other: %v", err)
 	}
@@ -29,11 +29,11 @@ func TestRequireOwnWorkspace(t *testing.T) {
 
 func TestRequireOwnPage(t *testing.T) {
 	pool := testPool(t)
-	ownerID, denID, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), "owner@example.com")
+	ownerID, denID, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), randomEmail(t))
 	if err != nil {
 		t.Fatalf("setup owner: %v", err)
 	}
-	otherID, _, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), "other@example.com")
+	otherID, _, _, err := EnsureUserAndDen(t.Context(), pool, randomSub(t), randomEmail(t))
 	if err != nil {
 		t.Fatalf("setup other: %v", err)
 	}
