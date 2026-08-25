@@ -1,0 +1,55 @@
+name: E2E
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      # Same full-stack profile self-hosting uses (see docker-compose.yml) --
+      # OAuth vars are left unset since these tests seed sessions directly
+      # into Postgres and never drive Google's real consent screen.
+      - name: Start the full-stack Compose profile
+        run: docker compose --profile full up -d --build --wait
+
+      - name: Run Playwright tests
+        working-directory: web
+        env:
+          BASE_URL: http://localhost:3000
+          API_ORIGIN: http://localhost:8080
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/hootden?sslmode=disable
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7
+
+      - name: Compose logs
+        if: failure()
+        run: docker compose --profile full logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose --profile full down -v
