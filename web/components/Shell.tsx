@@ -1,7 +1,7 @@
 "use client";
 
-import { api, type Me } from "@/lib/api";
-import { Bear } from "@/components/mascots/Bear";
+import type { ReactNode } from "react";
+import { api } from "@/lib/api";
 
 type Theme = "light" | "dark";
 
@@ -40,10 +40,11 @@ function ThemeToggle() {
   );
 }
 
-// App shell: sidebar plus content region. No workspace switcher, create, or
-// delete affordance -- there is exactly one Den per account in this
-// version. The page tree (task group 9) fills the sidebar later.
-export function Shell({ me }: { me: Me }) {
+// App shell: sidebar plus content region. No workspace switcher -- there is
+// exactly one Den per account in this version. `tree` fills the sidebar
+// below the wordmark, `children` fills the content region; callers (the
+// root route and /pages/[id]) own what actually goes in each slot.
+export function Shell({ tree, children }: { tree?: ReactNode; children?: ReactNode }) {
   async function signOut() {
     await api.post("/auth/signout");
     // Hard reload so nothing signed-in stays in memory or component state.
@@ -64,7 +65,7 @@ export function Shell({ me }: { me: Me }) {
         }}
       >
         <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem" }}>Hootden</span>
-        <div style={{ flex: 1 }} />
+        <div style={{ flex: 1, overflowY: "auto" }}>{tree}</div>
         <ThemeToggle />
         <button
           onClick={signOut}
@@ -80,10 +81,7 @@ export function Shell({ me }: { me: Me }) {
           Sign out
         </button>
       </aside>
-      <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "var(--space-4)" }}>
-        <Bear size={96} />
-        <p style={{ color: "var(--foreground-muted)" }}>Signed in as {me.email}</p>
-      </main>
+      <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>{children}</main>
     </div>
   );
 }
