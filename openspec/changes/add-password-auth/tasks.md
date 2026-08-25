@@ -5,10 +5,10 @@
 
 ## 2. Registration and login
 
-- [ ] 2.1 Add `workspace.CreateUserWithPassword(ctx, pool, email, passwordHash, name)` creating the user and personal Den in one transaction, and `workspace.FindUserByEmail(ctx, pool, email)`, with tests covering a fresh email succeeding, a duplicate email failing with a unique-violation, and a lookup miss
-- [ ] 2.2 Add the `Register` handler: validate password length (≥8), hash with bcrypt, call `CreateUserWithPassword`, then `CreateSession` and set the session cookie exactly as `Callback` does, responding `204` on success; test covering success, duplicate email, and too-short password
-- [ ] 2.3 Add the `Login` handler: look up by email, `bcrypt.CompareHashAndPassword` against the stored hash (or a fixed dummy hash when the email is unknown or the account has no `password_hash`, keeping the timing identical), then `CreateSession` and set the cookie; test covering correct credentials, wrong password, unknown email, and a Google-only account with no password set — confirming the last three return the same response
-- [ ] 2.4 Wire `POST /auth/register` and `POST /auth/login` into `main.go` alongside the existing unauthenticated `/auth` routes, and verify both are reachable without a session and reachable requests to protected routes still 401 without one
+- [x] 2.1 Add `workspace.CreateUserWithPassword(ctx, pool, email, passwordHash)` creating the user and personal Den in one transaction, and `workspace.FindUserByEmail(ctx, pool, email)`, with tests covering a fresh email succeeding, a duplicate email failing with a unique-violation, and a lookup miss (no `name` parameter: neither the schema nor the accounts spec delta has a name field, so this drops the stray "display name" mention from proposal.md's "What Changes" bullet)
+- [x] 2.2 Add the `Register` handler: validate password length (≥8), hash with bcrypt, call `CreateUserWithPassword`, then `CreateSession` and set the session cookie exactly as `Callback` does, responding `204` on success; test covering success, duplicate email, and too-short password
+- [x] 2.3 Add the `Login` handler: look up by email, `bcrypt.CompareHashAndPassword` against the stored hash (or a fixed dummy hash when the email is unknown or the account has no `password_hash`, keeping the timing identical), then `CreateSession` and set the cookie; test covering correct credentials, wrong password, unknown email, and a Google-only account with no password set — confirming the last three return the same response
+- [x] 2.4 Wire `POST /auth/register` and `POST /auth/login` into `main.go` alongside the existing unauthenticated `/auth` routes, and verify both are reachable without a session and reachable requests to protected routes still 401 without one
 
 ## 3. Google becomes optional
 
