@@ -8,6 +8,51 @@ services:
       - "5432:5432"
     volumes:
       - hootden-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  # `server` and `web` are the full-stack profile: `docker compose up` alone
+  # still starts just `postgres`, for local `go run .` / `npm run dev`.
+  # `docker compose --profile full up` runs the whole app in containers.
+  server:
+    profiles: ["full"]
+    build: ./server
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/hootden?sslmode=disable
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URL: ${GOOGLE_REDIRECT_URL:-}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  web:
+    profiles: ["full"]
+    build:
+      context: ./web
+      args:
+        # Baked into the client bundle at build time -- must resolve from the
+        # browser, so this is the host-published port, not the `server`
+        # container's compose-network name.
+        NEXT_PUBLIC_API_ORIGIN: ${NEXT_PUBLIC_API_ORIGIN:-http://localhost:8080}
+    ports:
+      - "3000:3000"
+    depends_on:
+      server:
+        condition: service_healthy
 
 volumes:
   hootden-postgres-data:

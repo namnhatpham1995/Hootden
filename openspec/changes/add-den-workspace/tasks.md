@@ -84,10 +84,10 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 11. Docker packaging
 
-- [ ] 11.1 Write `server/Dockerfile` (multi-stage Go build), and verify the built image serves `/healthz` 200 against a linked Postgres container
-- [ ] 11.2 Set `output: 'standalone'` in `next.config.ts` and write `web/Dockerfile`, and verify the built image serves the placeholder route without the full `node_modules` tree in the final image
-- [ ] 11.3 Extend `docker-compose.yml` with a full-stack profile (web + server + postgres), and verify `docker compose up` on a clean checkout reaches a working signed-out landing page with no manually-run setup step
-- [ ] 11.4 Document the environment variables each image needs (`server/.env.example` already covers the server; add the frontend's), and verify the compose profile runs from `.env.example` values alone plus real OAuth credentials
+- [x] 11.1 Write `server/Dockerfile` (multi-stage Go build), and verify the built image serves `/healthz` 200 against a linked Postgres container
+- [x] 11.2 Set `output: 'standalone'` in `next.config.ts` and write `web/Dockerfile`, and verify the built image serves the placeholder route without the full `node_modules` tree in the final image
+- [x] 11.3 Extend `docker-compose.yml` with a full-stack profile (web + server + postgres), and verify `docker compose up` on a clean checkout reaches a working signed-out landing page with no manually-run setup step
+- [x] 11.4 Document the environment variables each image needs (`server/.env.example` already covers the server; add the frontend's), and verify the compose profile runs from `.env.example` values alone plus real OAuth credentials
 
 ## 12. Playwright E2E
 
