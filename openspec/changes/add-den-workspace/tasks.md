@@ -91,12 +91,12 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 12. Playwright E2E
 
-- [ ] 12.1 Set up Playwright against the Docker Compose full-stack profile, and verify a trivial smoke test (landing page loads) passes in CI
-- [ ] 12.2 Add a session-seeding helper that inserts a user, Den, and session row directly into Postgres and sets the resulting cookie, and verify a test using it lands on an authenticated page with no Google interaction
-- [ ] 12.3 Write an E2E test for sign-in through to landing in an empty Den (using the seeding helper, not real Google), and verify it fails if `RequireAuth` rejects the seeded session
-- [ ] 12.4 Write an E2E test for page CRUD (create, rename, delete with confirmation), and verify each mutation is reflected after a reload
-- [ ] 12.5 Write an E2E test for drag-to-reorder and reparent, and verify the new position survives a reload
-- [ ] 12.6 Write an E2E test for autosave (edit, wait, reload, confirm content persisted), and verify it fails if the debounce or save path regresses
+- [x] 12.1 Set up Playwright against the Docker Compose full-stack profile, and verify a trivial smoke test (landing page loads) passes in CI
+- [x] 12.2 Add a session-seeding helper that inserts a user, Den, and session row directly into Postgres and sets the resulting cookie, and verify a test using it lands on an authenticated page with no Google interaction
+- [x] 12.3 Write an E2E test for sign-in through to landing in an empty Den (using the seeding helper, not real Google), and verify it fails if `RequireAuth` rejects the seeded session
+- [x] 12.4 Write an E2E test for page CRUD (create, rename, delete with confirmation), and verify each mutation is reflected after a reload
+- [x] 12.5 Write an E2E test for drag-to-reorder and reparent, and verify the new position survives a reload
+- [x] 12.6 Write an E2E test for autosave (edit, wait, reload, confirm content persisted), and verify it fails if the debounce or save path regresses
 
 ## 13. Deploy and end-to-end verification
 
