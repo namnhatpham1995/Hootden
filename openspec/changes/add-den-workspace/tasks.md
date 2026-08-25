@@ -66,12 +66,12 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 9. Page tree UI
 
-- [ ] 9.1 Render the tree from the API, and verify nesting and sibling order match the stored data
-- [ ] 9.2 Add page creation at root and as a child, and verify a new page opens for editing immediately
-- [ ] 9.3 Add inline rename, and verify both the tree entry and the page heading update without a reload
-- [ ] 9.4 Add drag to reorder and reparent, and verify the new position survives a reload
-- [ ] 9.5 Add delete with a confirmation stating the descendant count, and verify cancelling removes nothing
-- [ ] 9.6 Build the empty state featuring the sleeping bear, and verify it appears for a workspace with no pages and offers to create the first one
+- [x] 9.1 Render the tree from the API, and verify nesting and sibling order match the stored data
+- [x] 9.2 Add page creation at root and as a child, and verify a new page opens for editing immediately
+- [x] 9.3 Add inline rename, and verify both the tree entry and the page heading update without a reload
+- [x] 9.4 Add drag to reorder and reparent, and verify the new position survives a reload
+- [x] 9.5 Add delete with a confirmation stating the descendant count, and verify cancelling removes nothing
+- [x] 9.6 Build the empty state featuring the sleeping bear, and verify it appears for a workspace with no pages and offers to create the first one
 
 ## 10. Editor
 

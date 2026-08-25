@@ -70,3 +70,48 @@ export async function getCurrentUser(): Promise<Me | null> {
   }
   return res.json();
 }
+
+// PageNode is the flat list shape /pages returns -- no nested children, the
+// tree is assembled client-side from parent_id + position (see PageTree).
+// parent_id is omitted by the backend for root pages (Go's omitempty),
+// never sent as null, so it's optional here rather than nullable.
+export type PageNode = {
+  id: string;
+  parent_id?: string;
+  title: string;
+  position: number;
+};
+
+export type PageDoc = PageNode & { doc: unknown; updated_at: string };
+
+export function listPages(): Promise<PageNode[]> {
+  return api.get<PageNode[]>("/pages");
+}
+
+export function getPage(id: string): Promise<PageDoc> {
+  return api.get<PageDoc>(`/pages/${id}`);
+}
+
+export function createPage(parentId: string, title: string): Promise<PageNode> {
+  return api.post<PageNode>("/pages", { parent_id: parentId, title });
+}
+
+// The PATCH endpoint returns 204 with no body for every update, so these
+// resolve to void -- callers refetch the list/page to see the result.
+export function renamePage(id: string, title: string): Promise<void> {
+  return api.patch<void>(`/pages/${id}`, { title });
+}
+
+// movePage always sends parent_id together with position -- the backend
+// only treats this as a move (vs. a plain rename) when position is present.
+export function movePage(id: string, parentId: string, position: number): Promise<void> {
+  return api.patch<void>(`/pages/${id}`, { parent_id: parentId, position });
+}
+
+export function saveDoc(id: string, doc: unknown): Promise<void> {
+  return api.patch<void>(`/pages/${id}`, { doc });
+}
+
+export function deletePage(id: string): Promise<void> {
+  return api.delete<void>(`/pages/${id}`);
+}
