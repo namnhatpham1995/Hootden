@@ -75,12 +75,12 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 
 ## 10. Editor
 
-- [ ] 10.1 Configure TipTap with exactly the node and mark set named in the pages spec, and verify each type survives a save and reload round trip
-- [ ] 10.2 Load a stored document into the editor, and verify headings, nested lists, and inline marks are restored as written
-- [ ] 10.3 Implement autosave debounced at 800 ms with a saved/saving/failed indicator, and verify a change is persisted within 2 seconds of pausing
-- [ ] 10.4 Implement retry with backoff on failed saves, and verify with the API unreachable that content stays in the editor and saves once it returns
-- [ ] 10.5 Add the `beforeunload` warning while the document is dirty, and verify it does not fire once saved
-- [ ] 10.6 Verify checkbox items retain their checked state across reload
+- [x] 10.1 Configure TipTap with exactly the node and mark set named in the pages spec, and verify each type survives a save and reload round trip
+- [x] 10.2 Load a stored document into the editor, and verify headings, nested lists, and inline marks are restored as written
+- [x] 10.3 Implement autosave debounced at 800 ms with a saved/saving/failed indicator, and verify a change is persisted within 2 seconds of pausing
+- [x] 10.4 Implement retry with backoff on failed saves, and verify with the API unreachable that content stays in the editor and saves once it returns
+- [x] 10.5 Add the `beforeunload` warning while the document is dirty, and verify it does not fire once saved
+- [x] 10.6 Verify checkbox items retain their checked state across reload
 
 ## 11. Docker packaging
 
