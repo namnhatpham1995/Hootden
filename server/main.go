@@ -40,12 +40,19 @@ func main() {
 		AppOrigin:    cfg.AppOrigin,
 		CookieDomain: cfg.CookieDomain,
 	}
+	passwordHandlers := auth.PasswordHandlers{
+		Pool:         pool,
+		Store:        workspace.PasswordStore{Pool: pool},
+		CookieDomain: cfg.CookieDomain,
+	}
 	requireAuth := auth.RequireAuth(pool, cfg.CookieDomain)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
 	mux.HandleFunc("GET /auth/google/start", authHandlers.Start)
 	mux.HandleFunc("GET /auth/google/callback", authHandlers.Callback)
+	mux.HandleFunc("POST /auth/register", passwordHandlers.Register)
+	mux.HandleFunc("POST /auth/login", passwordHandlers.Login)
 	mux.HandleFunc("POST /auth/signout", authHandlers.SignOut)
 	mux.Handle("GET /me", requireAuth(workspace.Me(pool)))
 
