@@ -22,5 +22,19 @@ unauthedTest("an invalid session cookie is rejected, not treated as signed in", 
     },
   ]);
   await page.goto("/");
+  await unauthedExpect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+});
+
+// CI runs with no Google client id configured (see e2e.yml), so the real
+// /auth/config always reports it disabled here -- the enabled case is
+// exercised by mocking the response rather than needing real credentials.
+unauthedTest("Google sign-in link reflects configured availability", async ({ page }) => {
+  await page.goto("/");
+  await unauthedExpect(page.getByRole("link", { name: "Sign in with Google" })).not.toBeVisible();
+
+  await page.route("**/auth/config", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ googleEnabled: true }) }),
+  );
+  await page.reload();
   await unauthedExpect(page.getByRole("link", { name: "Sign in with Google" })).toBeVisible();
 });
