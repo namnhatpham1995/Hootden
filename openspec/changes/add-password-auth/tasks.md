@@ -30,5 +30,5 @@
 
 ## 6. Documentation
 
-- [ ] 6.1 Update `README.md`'s setup steps to note email/password sign-in needs no Google Cloud setup, and update `server/.env.example`'s comments to mark the `GOOGLE_*` variables optional
-- [ ] 6.2 Re-verify the README's local-dev steps end to end using only password sign-in (no Google credentials configured), following it as someone unfamiliar with the project would
+- [x] 6.1 Update `README.md`'s setup steps to note email/password sign-in needs no Google Cloud setup, and update `server/.env.example`'s comments to mark the `GOOGLE_*` variables optional
+- [x] 6.2 Re-verify the README's local-dev steps end to end using only password sign-in (no Google credentials configured), following it as someone unfamiliar with the project would
