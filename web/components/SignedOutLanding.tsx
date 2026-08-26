@@ -1,9 +1,49 @@
-import { API_ORIGIN } from "@/lib/api";
+"use client";
+
+import { useEffect, useState } from "react";
+import { API_ORIGIN, ApiError, getAuthConfig, login, register } from "@/lib/api";
 import { Bear } from "@/components/mascots/Bear";
+
+const MIN_PASSWORD_LENGTH = 8;
 
 // Single signed-out screen -- no marketing site in this version, see
 // design.md's Non-Goals.
 export function SignedOutLanding() {
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  useEffect(() => {
+    getAuthConfig()
+      .then((cfg) => setGoogleEnabled(cfg.googleEnabled))
+      .catch(() => setGoogleEnabled(false));
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (mode === "register" && password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await (mode === "register" ? register(email, password) : login(email, password));
+      // Hard reload, not router.push: useDen() needs to re-run getCurrentUser()
+      // from scratch now that the session cookie is set.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.href = "/";
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Something went wrong. Try again.");
+      setSubmitting(false);
+    }
+  }
+
   return (
     <main
       style={{
@@ -22,19 +62,98 @@ export function SignedOutLanding() {
       <p style={{ color: "var(--foreground-muted)", maxWidth: "28ch" }}>
         A small den for your notes, checklists, and plans.
       </p>
-      <a
-        href={`${API_ORIGIN}/auth/google/start`}
+
+      <form
+        onSubmit={handleSubmit}
         style={{
-          fontFamily: "var(--font-ui)",
-          fontWeight: 600,
-          padding: "var(--space-3) var(--space-6)",
-          borderRadius: "var(--radius-pill)",
-          background: "var(--accent)",
-          color: "var(--accent-foreground)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-3)",
+          width: "100%",
+          maxWidth: "320px",
         }}
       >
-        Sign in with Google
-      </a>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          style={inputStyle}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete={mode === "register" ? "new-password" : "current-password"}
+          style={inputStyle}
+        />
+        {error && <p style={{ color: "var(--danger)", fontSize: "0.9rem" }}>{error}</p>}
+        <button
+          type="submit"
+          disabled={submitting}
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontWeight: 600,
+            padding: "var(--space-3) var(--space-6)",
+            borderRadius: "var(--radius-pill)",
+            background: "var(--accent)",
+            color: "var(--accent-foreground)",
+            border: "none",
+            cursor: submitting ? "default" : "pointer",
+            opacity: submitting ? 0.7 : 1,
+          }}
+        >
+          {mode === "register" ? "Create account" : "Sign in"}
+        </button>
+      </form>
+
+      <button
+        type="button"
+        onClick={() => {
+          setMode(mode === "register" ? "login" : "register");
+          setError(null);
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          color: "var(--secondary)",
+          fontFamily: "var(--font-ui)",
+          fontSize: "0.9rem",
+          cursor: "pointer",
+        }}
+      >
+        {mode === "register" ? "Already have an account? Sign in" : "New here? Create an account"}
+      </button>
+
+      {googleEnabled && (
+        <a
+          href={`${API_ORIGIN}/auth/google/start`}
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontWeight: 600,
+            padding: "var(--space-3) var(--space-6)",
+            borderRadius: "var(--radius-pill)",
+            border: "1px solid var(--border)",
+            color: "var(--foreground)",
+          }}
+        >
+          Sign in with Google
+        </a>
+      )}
     </main>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  font: "inherit",
+  fontFamily: "var(--font-ui)",
+  padding: "var(--space-3) var(--space-4)",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--border)",
+  background: "var(--surface-raised)",
+  color: "var(--foreground)",
+};
