@@ -49,6 +49,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
+	mux.HandleFunc("GET /auth/config", auth.Config(cfg.GoogleClientID != ""))
 	mux.HandleFunc("GET /auth/google/start", authHandlers.Start)
 	mux.HandleFunc("GET /auth/google/callback", authHandlers.Callback)
 	mux.HandleFunc("POST /auth/register", passwordHandlers.Register)
