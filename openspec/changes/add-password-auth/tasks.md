@@ -12,8 +12,8 @@
 
 ## 3. Google becomes optional
 
-- [ ] 3.1 Add `GET /auth/config` returning `{"googleEnabled": bool}`, true iff `GOOGLE_CLIENT_ID` is non-empty, and verify it flips with the env var
-- [ ] 3.2 Verify the server boots and serves `/healthz` and password auth correctly with `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL` all unset (no crash, Google routes simply never succeed if hit)
+- [x] 3.1 Add `GET /auth/config` returning `{"googleEnabled": bool}`, true iff `GOOGLE_CLIENT_ID` is non-empty, and verify it flips with the env var
+- [x] 3.2 Verify the server boots and serves `/healthz` and password auth correctly with `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL` all unset (no crash, Google routes simply never succeed if hit)
 
 ## 4. Frontend
 
