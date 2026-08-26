@@ -24,9 +24,9 @@
 
 ## 5. E2E coverage
 
-- [ ] 5.1 Add a Playwright test that registers a new account through the real UI (not seeded — no external consent screen blocks this path) and lands in an empty Den
-- [ ] 5.2 Add a Playwright test that registering with an already-used email shows an error and creates no account
-- [ ] 5.3 Add a Playwright test that signing out and back in with the same email/password reaches the same Den with prior content intact
+- [x] 5.1 Add a Playwright test that registers a new account through the real UI (not seeded — no external consent screen blocks this path) and lands in an empty Den
+- [x] 5.2 Add a Playwright test that registering with an already-used email shows an error and creates no account
+- [x] 5.3 Add a Playwright test that signing out and back in with the same email/password reaches the same Den with prior content intact
 
 ## 6. Documentation
 
