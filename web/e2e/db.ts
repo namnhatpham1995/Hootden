@@ -40,6 +40,11 @@ export async function seedSession(): Promise<Seeded> {
   return { userId: user.id, denId: den.id, token };
 }
 
+export async function countUsersWithEmail(email: string): Promise<number> {
+  const { rows } = await pool.query<{ count: string }>(`SELECT count(*) FROM users WHERE email = $1`, [email]);
+  return Number(rows[0].count);
+}
+
 export async function closeDb(): Promise<void> {
   await pool.end();
 }
