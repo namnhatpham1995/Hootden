@@ -17,10 +17,10 @@
 
 ## 4. Frontend
 
-- [ ] 4.1 Add `register`, `login`, and `getAuthConfig` calls to the API client, and verify each against the running server
-- [ ] 4.2 Build registration and login forms on the signed-out landing screen (toggle between them), using the existing design tokens and mascots per the visual system, and verify both submit and show field-level errors for a short password or a rejected login
-- [ ] 4.3 Render the "Sign in with Google" control only when `getAuthConfig()` reports it enabled, and verify it's hidden with no Google env vars set and shown with them set
-- [ ] 4.4 Route a successful register/login through the same "load current user, enter the Den" path the Google callback uses, and verify a fresh registration lands in an empty Den with no setup step, matching existing Google sign-up behavior
+- [x] 4.1 Add `register`, `login`, and `getAuthConfig` calls to the API client, and verify each against the running server
+- [x] 4.2 Build registration and login forms on the signed-out landing screen (toggle between them), using the existing design tokens and mascots per the visual system, and verify both submit and show field-level errors for a short password or a rejected login
+- [x] 4.3 Render the "Sign in with Google" control only when `getAuthConfig()` reports it enabled, and verify it's hidden with no Google env vars set and shown with them set
+- [x] 4.4 Route a successful register/login through the same "load current user, enter the Den" path the Google callback uses, and verify a fresh registration lands in an empty Den with no setup step, matching existing Google sign-up behavior
 
 ## 5. E2E coverage
 

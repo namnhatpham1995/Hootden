@@ -56,6 +56,35 @@ export type Me = {
   workspace: { id: string };
 };
 
+// register/login bypass apiFetch: a 401 from login is an expected "wrong
+// credentials" outcome, not a dead session to bounce away from, so they
+// can't share apiFetch's auto-redirect-on-401 behaviour.
+async function postAuth(path: string, body: unknown): Promise<void> {
+  const res = await fetch(`${API_ORIGIN}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) return;
+  const errBody = await res.json().catch(() => ({}) as { error?: string });
+  throw new ApiError(res.status, errBody.error ?? `request failed (${res.status})`);
+}
+
+export function register(email: string, password: string): Promise<void> {
+  return postAuth("/auth/register", { email, password });
+}
+
+export function login(email: string, password: string): Promise<void> {
+  return postAuth("/auth/login", { email, password });
+}
+
+export async function getAuthConfig(): Promise<{ googleEnabled: boolean }> {
+  const res = await fetch(`${API_ORIGIN}/auth/config`, { credentials: "include" });
+  if (!res.ok) throw new ApiError(res.status, "failed to load sign-in options");
+  return res.json();
+}
+
 // getCurrentUser is the one caller that must NOT use apiFetch's 401 handling
 // -- an unauthenticated response here is the expected signed-out state, not
 // an error to bounce away from, since this is what decides whether to show
