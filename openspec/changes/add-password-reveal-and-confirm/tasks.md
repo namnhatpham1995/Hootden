@@ -23,10 +23,10 @@ Ordered before the new field, and separately: it is a no-op refactor that can be
 
 Depends on group 2 for the locator change and group 3 for the shared reveal state.
 
-- [ ] 4.1 Add a second password field rendered in registration mode only, labelled distinctly from the first, with `autoComplete="new-password"` on both, and verify sign-in mode still shows exactly one password field
-- [ ] 4.2 Reject a mismatched pair before calling `register()`, showing the existing inline error and leaving the email and both entries as typed, and verify no request reaches the API on a mismatch
-- [ ] 4.3 Clear the confirmation entry when switching between sign-in and registration, and verify switching modes never carries a stale confirmation into a fresh registration
-- [ ] 4.4 Verify the API request body still carries exactly `{email, password}` with no third field
+- [x] 4.1 Add a second password field rendered in registration mode only, labelled distinctly from the first, with `autoComplete="new-password"` on both, and verify sign-in mode still shows exactly one password field
+- [x] 4.2 Reject a mismatched pair before calling `register()`, showing the existing inline error and leaving the email and both entries as typed, and verify no request reaches the API on a mismatch
+- [x] 4.3 Clear the confirmation entry when switching between sign-in and registration, and verify switching modes never carries a stale confirmation into a fresh registration
+- [x] 4.4 Verify the API request body still carries exactly `{email, password}` with no third field
 
 ## 5. End-to-end verification
 
