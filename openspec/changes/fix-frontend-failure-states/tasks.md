@@ -23,10 +23,10 @@ Independent of the navigation work and shippable alone; the retry loop stops lyi
 
 Depends on group 2 for the failure classification the flush reports through.
 
-- [ ] 4.1 Flush a pending or retrying save in `Editor`'s unmount cleanup instead of clearing the timer, and verify the request is issued and completes after the component has unmounted
-- [ ] 4.2 Warn before discarding changes that could not be flushed, and verify the warning appears for a flush that fails and not for one that succeeds
-- [ ] 4.3 Add an e2e test that typing and immediately selecting another page persists the edit — no waiting for "Saved" — and verify it fails against the current `clearTimeout` behaviour
-- [ ] 4.4 Add an e2e test that leaving during a retry backoff either saves or warns, using the 1.1 helper to fail the first save, and verify the work is never dropped silently
+- [x] 4.1 Flush a pending or retrying save in `Editor`'s unmount cleanup instead of clearing the timer, and verify the request is issued and completes after the component has unmounted
+- [x] 4.2 Warn before discarding changes that could not be flushed, and verify the warning appears for a flush that fails and not for one that succeeds
+- [x] 4.3 Add an e2e test that typing and immediately selecting another page persists the edit — no waiting for "Saved" — and verify it fails against the current `clearTimeout` behaviour
+- [x] 4.4 Add an e2e test that leaving during a retry backoff either saves or warns, using the 1.1 helper to fail the first save, and verify the work is never dropped silently
 
 ## 5. Sign-in check has a failure state
 
