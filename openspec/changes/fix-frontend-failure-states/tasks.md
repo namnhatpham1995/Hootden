@@ -2,8 +2,8 @@
 
 Ordered first because every group below needs it, and because three of these bugs exist precisely for want of a test that can fail. Landing it first means each subsequent group ships with proof rather than an assertion that it works.
 
-- [ ] 1.1 Add an e2e helper that forces a chosen status on a matching API route via Playwright request interception, and verify it by making an existing save fail and observing the editor's "Failed to save" state
-- [ ] 1.2 Add an e2e helper that revokes the signed-in session server-side mid-test, reusing the direct-Postgres approach in `web/e2e/db.ts`, and verify a following API call receives a genuine 401 rather than a simulated one
+- [x] 1.1 Add an e2e helper that forces a chosen status on a matching API route via Playwright request interception, and verify it by making an existing save fail and observing the editor's "Failed to save" state
+- [x] 1.2 Add an e2e helper that revokes the signed-in session server-side mid-test, reusing the direct-Postgres approach in `web/e2e/db.ts`, and verify a following API call receives a genuine 401 rather than a simulated one
 
 ## 2. Save failures are classified
 
