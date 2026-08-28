@@ -30,9 +30,9 @@ Depends on group 2 for the locator change and group 3 for the shared reveal stat
 
 ## 5. End-to-end verification
 
-- [ ] 5.1 Add a Playwright test that a registration with mismatched entries shows the mismatch error, creates no account, and leaves the typed values in place, and verify it fails if the client-side check is removed
-- [ ] 5.2 Add a Playwright test that toggling reveal exposes the typed password and submits the same value, covering both form modes
-- [ ] 5.3 Verify registration, sign-out, and sign-in still work end to end with a password manager active in one browser, confirming the `type` toggle does not disrupt fill or save
+- [x] 5.1 Add a Playwright test that a registration with mismatched entries shows the mismatch error, creates no account, and leaves the typed values in place, and verify it fails if the client-side check is removed
+- [x] 5.2 Add a Playwright test that toggling reveal exposes the typed password and submits the same value, covering both form modes
+- [ ] 5.3 Verify registration, sign-out, and sign-in still work end to end with a password manager active in one browser, confirming the `type` toggle does not disrupt fill or save — needs a human with a real password manager; not automatable in CI
 
 ## 6. Documentation
 
