@@ -12,6 +12,7 @@ export function SignedOutLanding() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -29,6 +30,10 @@ export function SignedOutLanding() {
 
     if (mode === "register" && password.length < MIN_PASSWORD_LENGTH) {
       setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+    if (mode === "register" && password !== confirmPassword) {
+      setError("Passwords don't match.");
       return;
     }
 
@@ -114,6 +119,23 @@ export function SignedOutLanding() {
             </button>
           </div>
         </div>
+        {mode === "register" && (
+          <div style={fieldStyle}>
+            <label htmlFor="confirm-password" style={labelStyle}>
+              Confirm password
+            </label>
+            <input
+              id="confirm-password"
+              type={revealed ? "text" : "password"}
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              style={inputStyle}
+            />
+          </div>
+        )}
         {error && <p style={{ color: "var(--danger)", fontSize: "0.9rem" }}>{error}</p>}
         <button
           type="submit"
@@ -138,6 +160,7 @@ export function SignedOutLanding() {
         type="button"
         onClick={() => {
           setMode(mode === "register" ? "login" : "register");
+          setConfirmPassword("");
           setError(null);
         }}
         style={{
