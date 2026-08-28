@@ -5,10 +5,10 @@ import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
-import { getPage, saveDoc } from "@/lib/api";
+import { ApiError, getPage, saveDoc } from "@/lib/api";
 import { isRetryableSaveFailure } from "@/lib/saveFailure";
 
-type SaveStatus = "loading" | "saved" | "saving" | "failed" | "rejected";
+type SaveStatus = "loading" | "saved" | "saving" | "failed" | "rejected" | "signedOut";
 
 const SAVE_DEBOUNCE_MS = 800;
 const RETRY_BASE_MS = 1000;
@@ -24,6 +24,8 @@ function statusLabel(status: SaveStatus, rejectionReason: string | null): string
       return "Failed to save — retrying…";
     case "rejected":
       return `Could not be saved: ${rejectionReason ?? "unknown reason"}`;
+    case "signedOut":
+      return "Signed out — this change was not saved";
     case "saved":
       return "Saved";
   }
@@ -71,7 +73,13 @@ export function Editor({ pageId }: { pageId: string }) {
         setStatus("saved");
       }
     } catch (err) {
-      if (isRetryableSaveFailure(err)) {
+      if (err instanceof ApiError && err.status === 401) {
+        // The session is gone. Stop retrying against it, but don't
+        // navigate -- that's apiFetch's default for reads, not writes (see
+        // design.md) -- a redirect here would silently drop what's on screen.
+        retryDelay.current = RETRY_BASE_MS;
+        setStatus("signedOut");
+      } else if (isRetryableSaveFailure(err)) {
         setStatus("failed");
         scheduleSave(retryDelay.current);
         retryDelay.current = Math.min(retryDelay.current * 2, RETRY_MAX_MS);
@@ -135,7 +143,12 @@ export function Editor({ pageId }: { pageId: string }) {
             alignSelf: "center",
             fontFamily: "var(--font-ui)",
             fontSize: "0.85rem",
-            color: status === "failed" ? "var(--secondary)" : status === "rejected" ? "var(--danger)" : "var(--foreground-muted)",
+            color:
+              status === "failed"
+                ? "var(--secondary)"
+                : status === "rejected" || status === "signedOut"
+                  ? "var(--danger)"
+                  : "var(--foreground-muted)",
           }}
         >
           {statusLabel(status, rejectionReason)}

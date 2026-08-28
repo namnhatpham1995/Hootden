@@ -9,10 +9,14 @@ export class ApiError extends Error {
 }
 
 // apiFetch calls the Go API directly (never through a Next.js route
-// handler -- see design.md) with the session cookie attached. A 401
-// means the session is gone, so it sends the caller straight to the
-// signed-out landing screen rather than surfacing a fetch error.
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+// handler -- see design.md) with the session cookie attached. A 401 always
+// throws; redirectOn401 additionally sends the caller straight to the
+// signed-out landing screen, for the reads where a dead session should
+// bounce the whole app rather than be handled locally. Off by default --
+// see design.md's "redirect becomes opt-in" -- because most callers (every
+// write) need to keep whatever the person was doing on screen and handle
+// the 401 themselves instead of losing it to a hard navigation.
+async function apiFetch<T>(path: string, init?: RequestInit, opts: { redirectOn401?: boolean } = {}): Promise<T> {
   const res = await fetch(`${API_ORIGIN}${path}`, {
     ...init,
     credentials: "include",
@@ -20,7 +24,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (res.status === 401) {
-    if (typeof window !== "undefined") {
+    if (opts.redirectOn401 && typeof window !== "undefined") {
       // A hard reload, not router.push: apiFetch is a plain function called
       // from anywhere, not a component with a router instance, and losing
       // all client state on sign-out is the correct behaviour anyway.
@@ -42,7 +46,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  get: <T>(path: string) => apiFetch<T>(path),
+  // GET is the only verb that opts into the redirect -- a dead session on a
+  // read means there's nothing on screen worth preserving over bouncing to
+  // the landing screen; every write handles its own 401 (see saveDoc).
+  get: <T>(path: string) => apiFetch<T>(path, undefined, { redirectOn401: true }),
   post: <T>(path: string, body?: unknown) =>
     apiFetch<T>(path, { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined }),
   patch: <T>(path: string, body?: unknown) =>
@@ -56,27 +63,15 @@ export type Me = {
   workspace: { id: string };
 };
 
-// register/login bypass apiFetch: a 401 from login is an expected "wrong
-// credentials" outcome, not a dead session to bounce away from, so they
-// can't share apiFetch's auto-redirect-on-401 behaviour.
-async function postAuth(path: string, body: unknown): Promise<void> {
-  const res = await fetch(`${API_ORIGIN}${path}`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (res.ok) return;
-  const errBody = await res.json().catch(() => ({}) as { error?: string });
-  throw new ApiError(res.status, errBody.error ?? `request failed (${res.status})`);
-}
-
+// A 401 from login/register is an expected "wrong credentials" outcome, not
+// a dead session -- api.post doesn't request the redirect, so this needs no
+// special handling beyond the ApiError every other failure already throws.
 export function register(email: string, password: string): Promise<void> {
-  return postAuth("/auth/register", { email, password });
+  return api.post<void>("/auth/register", { email, password });
 }
 
 export function login(email: string, password: string): Promise<void> {
-  return postAuth("/auth/login", { email, password });
+  return api.post<void>("/auth/login", { email, password });
 }
 
 export async function getAuthConfig(): Promise<{ googleEnabled: boolean }> {
@@ -85,19 +80,17 @@ export async function getAuthConfig(): Promise<{ googleEnabled: boolean }> {
   return res.json();
 }
 
-// getCurrentUser is the one caller that must NOT use apiFetch's 401 handling
-// -- an unauthenticated response here is the expected signed-out state, not
-// an error to bounce away from, since this is what decides whether to show
-// the landing screen or the Den in the first place.
+// getCurrentUser is the one caller that must NOT request apiFetch's 401
+// redirect -- an unauthenticated response here is the expected signed-out
+// state, not an error to bounce away from, since this is what decides
+// whether to show the landing screen or the Den in the first place.
 export async function getCurrentUser(): Promise<Me | null> {
-  const res = await fetch(`${API_ORIGIN}/me`, { credentials: "include" });
-  if (res.status === 401) {
-    return null;
+  try {
+    return await apiFetch<Me>("/me");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) return null;
+    throw err;
   }
-  if (!res.ok) {
-    throw new ApiError(res.status, "failed to load account");
-  }
-  return res.json();
 }
 
 // PageNode is the flat list shape /pages returns -- no nested children, the

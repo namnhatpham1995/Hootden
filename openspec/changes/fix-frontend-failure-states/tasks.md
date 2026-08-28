@@ -15,9 +15,9 @@ Independent of the navigation work and shippable alone; the retry loop stops lyi
 
 ## 3. Session loss during an edit
 
-- [ ] 3.1 Invert `apiFetch`'s 401 handling so the redirect is requested by callers that want it rather than escaped by callers that do not, fold `getCurrentUser`/`postAuth`'s bare `fetch` calls back onto the shared path, and verify every existing e2e test still passes
-- [ ] 3.2 Handle a 401 from `saveDoc` by stopping the retry loop and showing that the session ended, without navigating, and verify with the 1.2 helper that the typed text is still on screen after a mid-edit revocation
-- [ ] 3.3 Verify the revoked-session case no longer produces a repeating leave-confirmation prompt, by revoking mid-edit and confirming no dialog recurs over at least two backoff intervals
+- [x] 3.1 Invert `apiFetch`'s 401 handling so the redirect is requested by callers that want it rather than escaped by callers that do not, fold `getCurrentUser`/`postAuth`'s bare `fetch` calls back onto the shared path, and verify every existing e2e test still passes
+- [x] 3.2 Handle a 401 from `saveDoc` by stopping the retry loop and showing that the session ended, without navigating, and verify with the 1.2 helper that the typed text is still on screen after a mid-edit revocation
+- [x] 3.3 Verify the revoked-session case no longer produces a repeating leave-confirmation prompt, by revoking mid-edit and confirming no dialog recurs over at least two backoff intervals
 
 ## 4. Pending saves survive leaving the editor
 
