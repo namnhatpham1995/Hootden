@@ -16,8 +16,8 @@ Ordered before the new field, and separately: it is a no-op refactor that can be
 
 ## 3. Reveal control
 
-- [ ] 3.1 Add a single reveal/re-mask control governing every password field on the form, as a `<button type="button">` with an accessible name that states its action and a pressed state, and verify clicking it while the form is incomplete submits nothing
-- [ ] 3.2 Verify fields start masked on both sign-in and registration, that toggling changes only visibility and not the submitted value, and that reloading the form returns to masked
+- [x] 3.1 Add a single reveal/re-mask control governing every password field on the form, as a `<button type="button">` with an accessible name that states its action and a pressed state, and verify clicking it while the form is incomplete submits nothing
+- [x] 3.2 Verify fields start masked on both sign-in and registration, that toggling changes only visibility and not the submitted value, and that reloading the form returns to masked
 
 ## 4. Confirmation field
 
