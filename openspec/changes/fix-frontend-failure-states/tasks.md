@@ -30,9 +30,9 @@ Depends on group 2 for the failure classification the flush reports through.
 
 ## 5. Sign-in check has a failure state
 
-- [ ] 5.1 Give `useDen`'s `me` an explicit error state distinct from loading and signed-out, and verify `Den` no longer renders `null` when `getCurrentUser` rejects
-- [ ] 5.2 Render an "account could not be loaded" state with a retry action, and verify it is shown for a 500 from `/me` and never for a 401
-- [ ] 5.3 Add an e2e test using the 1.1 helper that a 500 from `/me` shows that state rather than the landing screen or a blank page, and verify a genuine signed-out load still reaches the landing screen
+- [x] 5.1 Give `useDen`'s `me` an explicit error state distinct from loading and signed-out, and verify `Den` no longer renders `null` when `getCurrentUser` rejects
+- [x] 5.2 Render an "account could not be loaded" state with a retry action, and verify it is shown for a 500 from `/me` and never for a 401
+- [x] 5.3 Add an e2e test using the 1.1 helper that a 500 from `/me` shows that state rather than the landing screen or a blank page, and verify a genuine signed-out load still reaches the landing screen
 
 ## 6. Documentation
 
