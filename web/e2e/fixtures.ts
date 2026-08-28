@@ -3,7 +3,7 @@ import { seedSession } from "./db";
 
 const API_ORIGIN = process.env.API_ORIGIN ?? "http://localhost:8080";
 
-type Fixtures = { seededSession: { userId: string; denId: string } };
+type Fixtures = { seededSession: { userId: string; denId: string; token: string } };
 
 // Seeds a fresh signed-in user before every test in files that import this
 // `test` -- `auto: true` runs it even when a test never references the
@@ -15,7 +15,7 @@ export const test = base.extend<Fixtures>({
       await context.addCookies([
         { url: API_ORIGIN, name: "session", value: token, httpOnly: true, secure: true, sameSite: "Lax" },
       ]);
-      await use({ userId, denId });
+      await use({ userId, denId, token });
     },
     { auto: true },
   ],

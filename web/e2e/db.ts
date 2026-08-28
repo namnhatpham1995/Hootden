@@ -40,6 +40,13 @@ export async function seedSession(): Promise<Seeded> {
   return { userId: user.id, denId: den.id, token };
 }
 
+// Deletes the session row directly, mirroring what the server's
+// RevokeSession does -- lets a test end a session mid-edit without waiting
+// for real expiry, so the next API call gets a genuine 401.
+export async function revokeSession(token: string): Promise<void> {
+  await pool.query(`DELETE FROM sessions WHERE token_hash = $1`, [hashToken(token)]);
+}
+
 export async function countUsersWithEmail(email: string): Promise<number> {
   const { rows } = await pool.query<{ count: string }>(`SELECT count(*) FROM users WHERE email = $1`, [email]);
   return Number(rows[0].count);
