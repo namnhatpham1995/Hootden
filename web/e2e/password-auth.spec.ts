@@ -9,8 +9,8 @@ import { countUsersWithEmail } from "./db";
 async function registerThroughUI(page: Page, email: string, password: string) {
   await page.goto("/");
   await page.getByRole("button", { name: "New here? Create an account" }).click();
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Password").fill(password);
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
 }
 
@@ -56,8 +56,8 @@ test("signing out and back in with the same email/password reaches the same Den 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Password").fill(password);
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
 
   await expect(page.locator("aside").getByText("My Persisted Page")).toBeVisible();
