@@ -11,8 +11,8 @@ Ordered first because it is independent of the form work and ships on its own â€
 
 Ordered before the new field, and separately: it is a no-op refactor that can be reviewed and merged on its own, and it is what stops group 3 from breaking the suite. Doing it after would mean landing a red build and fixing it forward.
 
-- [ ] 2.1 Add a visible `<label>` bound to each existing input on the landing form, keeping the placeholders, and verify each field's accessible name survives typing (the name comes from the label, not the placeholder)
-- [ ] 2.2 Switch `web/e2e/password-auth.spec.ts` and any sibling spec that locates these fields from `getByPlaceholder` to `getByLabel`, and verify the full e2e suite passes unchanged against `docker compose --profile full`
+- [x] 2.1 Add a visible `<label>` bound to each existing input on the landing form, keeping the placeholders, and verify each field's accessible name survives typing (the name comes from the label, not the placeholder)
+- [x] 2.2 Switch `web/e2e/password-auth.spec.ts` and any sibling spec that locates these fields from `getByPlaceholder` to `getByLabel`, and verify the full e2e suite passes unchanged against `docker compose --profile full`
 
 ## 3. Reveal control
 
