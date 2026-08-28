@@ -118,7 +118,19 @@ export function Editor({ pageId }: { pageId: string }) {
     return () => {
       window.removeEventListener("beforeunload", handler);
       if (saveTimer.current) clearTimeout(saveTimer.current);
+      // The request outlives the component -- an in-flight fetch isn't
+      // cancelled by unmounting -- so fire the pending/retrying save instead
+      // of just dropping its timer. One attempt only: there's no component
+      // left to retry from, so a failure here has nowhere left to go but an
+      // alert (see design.md's "flush on unmount" decision).
+      if (dirtyRef.current) {
+        const doc = latestDoc.current;
+        saveDoc(pageId, doc).catch(() => {
+          window.alert("A change to this page could not be saved.");
+        });
+      }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- remounted per pageId via caller's key
   }, []);
 
   return (
