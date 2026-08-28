@@ -38,6 +38,57 @@ test("registering with an already-used email shows an error and creates no accou
   await expect.poll(() => countUsersWithEmail(email)).toBe(1);
 });
 
+test("registering with mismatched password entries shows an error, creates no account, and keeps what was typed", async ({
+  page,
+}) => {
+  const email = `e2e-${randomUUID()}@example.test`;
+  await page.goto("/");
+  await page.getByRole("button", { name: "New here? Create an account" }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("correct-horse-battery");
+  await page.getByLabel("Confirm password").fill("a-different-password");
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await expect(page.getByText("Passwords don't match.")).toBeVisible();
+  await expect(page.getByLabel("Email")).toHaveValue(email);
+  await expect(page.getByLabel("Password", { exact: true })).toHaveValue("correct-horse-battery");
+  await expect(page.getByLabel("Confirm password")).toHaveValue("a-different-password");
+  await expect.poll(() => countUsersWithEmail(email)).toBe(0);
+});
+
+test("toggling reveal exposes both password fields in registration and the sign-in field, without changing what is submitted", async ({
+  page,
+}) => {
+  const email = `e2e-${randomUUID()}@example.test`;
+  const password = "correct-horse-battery";
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "New here? Create an account" }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByLabel("Confirm password").fill(password);
+
+  await page.getByRole("button", { name: "Show password" }).click();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "text");
+  await expect(page.getByLabel("Confirm password")).toHaveAttribute("type", "text");
+  await expect(page.getByLabel("Password", { exact: true })).toHaveValue(password);
+  await expect(page.getByLabel("Confirm password")).toHaveValue(password);
+
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page.getByText("Your den is empty.")).toBeVisible();
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Show password" }).click();
+  await expect(page.getByLabel("Password")).toHaveAttribute("type", "text");
+  await expect(page.getByLabel("Password")).toHaveValue(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+
+  await expect(page.getByText("Your den is empty.")).toBeVisible();
+});
+
 test("signing out and back in with the same email/password reaches the same Den with prior content intact", async ({
   page,
 }) => {
