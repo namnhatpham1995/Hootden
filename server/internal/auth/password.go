@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/mail"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,6 +14,17 @@ import (
 )
 
 const minPasswordLength = 8
+
+// maxPasswordLength is bcrypt's own limit. Checked up front so an over-long
+// password is a stated rejection rather than an internal error from
+// GenerateFromPassword — see design.md's "Check the password length before
+// hashing" decision.
+const maxPasswordLength = 72
+
+func isValidEmail(email string) bool {
+	addr, err := mail.ParseAddress(email)
+	return err == nil && addr.Address == email
+}
 
 // dummyHash is compared against on a login attempt for an email that has no
 // account, or an account with no password set, so a bcrypt comparison always
@@ -42,8 +54,17 @@ func (h PasswordHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		httpapi.WriteJSONError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+	email := normalizeEmail(req.Email)
+	if !isValidEmail(email) {
+		httpapi.WriteJSONError(w, http.StatusBadRequest, "invalid email address")
+		return
+	}
 	if len(req.Password) < minPasswordLength {
 		httpapi.WriteJSONError(w, http.StatusBadRequest, "password must be at least 8 characters")
+		return
+	}
+	if len(req.Password) > maxPasswordLength {
+		httpapi.WriteJSONError(w, http.StatusBadRequest, "password must be at most 72 bytes")
 		return
 	}
 
@@ -53,7 +74,7 @@ func (h PasswordHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.Store.CreateUserWithPassword(r.Context(), normalizeEmail(req.Email), string(hash))
+	userID, err := h.Store.CreateUserWithPassword(r.Context(), email, string(hash))
 	if err != nil {
 		if errors.Is(err, ErrEmailTaken) {
 			httpapi.WriteJSONError(w, http.StatusConflict, "email already in use")

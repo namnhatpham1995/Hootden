@@ -2,10 +2,10 @@
 
 Ordered first because it is independent of the form work and ships on its own — the frontend groups do not depend on it, and it closes the two gaps that make a bad registration permanent or unexplained.
 
-- [ ] 1.1 Reject a registration whose email is empty or not a well-formed address in `auth.PasswordHandlers.Register`, before hashing, and verify unit tests cover an empty string, an address with no `@`, an address with no domain, and a valid address still succeeding
-- [ ] 1.2 Reject a password over bcrypt's 72-byte limit with a 400 naming the limit, checked before `GenerateFromPassword` rather than by interpreting its error, and verify a 73-byte password returns 400 with a usable message while a 72-byte one still registers
-- [ ] 1.3 Verify no path in `Register` can still map a rejectable input to `500 registration failed`, by reviewing each error branch and confirming the 500 is reachable only for genuine infrastructure failures
-- [ ] 1.4 Verify `Login` is unchanged and still answers a malformed or over-long input identically to a wrong password, so the existing "unknown email is rejected the same way" test continues to pass
+- [x] 1.1 Reject a registration whose email is empty or not a well-formed address in `auth.PasswordHandlers.Register`, before hashing, and verify unit tests cover an empty string, an address with no `@`, an address with no domain, and a valid address still succeeding
+- [x] 1.2 Reject a password over bcrypt's 72-byte limit with a 400 naming the limit, checked before `GenerateFromPassword` rather than by interpreting its error, and verify a 73-byte password returns 400 with a usable message while a 72-byte one still registers
+- [x] 1.3 Verify no path in `Register` can still map a rejectable input to `500 registration failed`, by reviewing each error branch and confirming the 500 is reachable only for genuine infrastructure failures
+- [x] 1.4 Verify `Login` is unchanged and still answers a malformed or over-long input identically to a wrong password, so the existing "unknown email is rejected the same way" test continues to pass
 
 ## 2. Labels and e2e locators
 
