@@ -36,4 +36,4 @@ Depends on group 2 for the locator change and group 3 for the shared reveal stat
 
 ## 6. Documentation
 
-- [ ] 6.1 Check whether the README or `web/AGENTS.md` describe the sign-in form's fields or the e2e locator convention, and update whichever do — record a no-op check here if neither mentions them
+- [x] 6.1 Check whether the README or `web/AGENTS.md` describe the sign-in form's fields or the e2e locator convention, and update whichever do — record a no-op check here if neither mentions them. No-op: neither file describes the form's fields or the e2e locator convention.
