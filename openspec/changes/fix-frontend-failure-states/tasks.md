@@ -9,9 +9,9 @@ Ordered first because every group below needs it, and because three of these bug
 
 Independent of the navigation work and shippable alone; the retry loop stops lying about unsaveable documents even before the flush exists.
 
-- [ ] 2.1 Branch `runSave`'s failure handling on `ApiError.status` per design.md — 5xx and network failures retry, other 4xx stop — and verify unit-level coverage that a 400 schedules no retry and a 503 does
-- [ ] 2.2 Add a terminal "could not be saved" status distinct from "retrying", showing why, and verify the editor's content is still present and editable in that state
-- [ ] 2.3 Add an e2e test using the 1.1 helper that a persistently-400 save stops retrying, reports itself, and leaves the typed text in the editor, and verify it fails when the classification is reverted
+- [x] 2.1 Branch `runSave`'s failure handling on `ApiError.status` per design.md — 5xx and network failures retry, other 4xx stop — and verify unit-level coverage that a 400 schedules no retry and a 503 does
+- [x] 2.2 Add a terminal "could not be saved" status distinct from "retrying", showing why, and verify the editor's content is still present and editable in that state
+- [x] 2.3 Add an e2e test using the 1.1 helper that a persistently-400 save stops retrying, reports itself, and leaves the typed text in the editor, and verify it fails when the classification is reverted
 
 ## 3. Session loss during an edit
 
