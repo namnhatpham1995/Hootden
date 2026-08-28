@@ -73,24 +73,36 @@ export function SignedOutLanding() {
           maxWidth: "320px",
         }}
       >
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete={mode === "register" ? "new-password" : "current-password"}
-          style={inputStyle}
-        />
+        <div style={fieldStyle}>
+          <label htmlFor="email" style={labelStyle}>
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            style={inputStyle}
+          />
+        </div>
+        <div style={fieldStyle}>
+          <label htmlFor="password" style={labelStyle}>
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete={mode === "register" ? "new-password" : "current-password"}
+            style={inputStyle}
+          />
+        </div>
         {error && <p style={{ color: "var(--danger)", fontSize: "0.9rem" }}>{error}</p>}
         <button
           type="submit"
@@ -147,6 +159,19 @@ export function SignedOutLanding() {
     </main>
   );
 }
+
+const fieldStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "var(--space-1)",
+  textAlign: "left",
+};
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: "var(--font-ui)",
+  fontSize: "0.85rem",
+  color: "var(--foreground-muted)",
+};
 
 const inputStyle: React.CSSProperties = {
   font: "inherit",
