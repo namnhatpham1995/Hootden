@@ -29,9 +29,11 @@ type Config struct {
 	// an authorized redirect URI on the Google OAuth client.
 	GoogleRedirectURL string
 	// CookieDomain is the Domain attribute for the session and OAuth-flow
-	// cookies, e.g. ".hootden.example" so it's shared by the apex and the
-	// api. subdomain. Empty means a host-only cookie, which is what local
-	// development against localhost needs.
+	// cookies, e.g. "hootden.example" (no leading dot -- checkCookieReachability
+	// matches it exactly, and a leading dot would make even the apex host fail
+	// that check) so it's shared by the apex and the api. subdomain. Empty
+	// means a host-only cookie, which is what local development against
+	// localhost needs.
 	CookieDomain string
 }
 
