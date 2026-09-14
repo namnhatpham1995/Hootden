@@ -74,6 +74,17 @@ func TestCheckCookieReachability(t *testing.T) {
 			cookieDomain: "hootden.example",
 			wantErr:      true,
 		},
+		{
+			// A leading dot is the form older cookie guidance uses, but the
+			// docs here require the exact-match form -- catching a
+			// leading-dot COOKIE_DOMAIN here, rather than silently
+			// normalizing it, is what makes that requirement enforceable.
+			name:         "cookie domain with a leading dot does not match, even for the apex it covers",
+			appOrigin:    "https://hootden.example",
+			apiOrigin:    "https://api.hootden.example",
+			cookieDomain: ".hootden.example",
+			wantErr:      true,
+		},
 	}
 
 	for _, tc := range tests {
