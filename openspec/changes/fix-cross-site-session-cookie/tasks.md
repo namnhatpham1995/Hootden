@@ -14,10 +14,10 @@ Ordered first, and deliberately: this group is what actually fixes sign-in, and 
 
 Shippable on its own once group 1 has set the variables. This is the whole of the spec delta.
 
-- [ ] 2.1 Add `API_ORIGIN` to `config.Config` and `config.Load()` as a required variable alongside `DATABASE_URL`, and verify `Load()` returns an error naming it when unset
-- [ ] 2.2 Add the cookie-reachability check to `config.Load()` per design.md's host comparison — with `COOKIE_DOMAIN` empty the app and API hosts must be equal, and with it set both must equal or be subdomains of it — returning an error that names the conflicting values, and verify with table tests covering each row of design.md's table, including that `localhost`/`localhost`/empty passes and that today's `hootden.vercel.app` + `up.railway.app` pair is refused
-- [ ] 2.3 Verify the server exits at startup rather than serving, by booting it with the failing combination and confirming it never binds the port and logs a message naming `APP_ORIGIN`, `API_ORIGIN`, and `COOKIE_DOMAIN`
-- [ ] 2.4 Add `API_ORIGIN` to `server/.env.example` (defaulting to `http://localhost:8080`) and to `docker-compose.yml`'s `server` service, and verify both `go run .` from `server/.env` and `docker compose --profile full up` still start and pass the existing e2e suite
+- [x] 2.1 Add `API_ORIGIN` to `config.Config` and `config.Load()` as a required variable alongside `DATABASE_URL`, and verify `Load()` returns an error naming it when unset
+- [x] 2.2 Add the cookie-reachability check to `config.Load()` per design.md's host comparison — with `COOKIE_DOMAIN` empty the app and API hosts must be equal, and with it set both must equal or be subdomains of it — returning an error that names the conflicting values, and verify with table tests covering each row of design.md's table, including that `localhost`/`localhost`/empty passes and that today's `hootden.vercel.app` + `up.railway.app` pair is refused
+- [x] 2.3 Verify the server exits at startup rather than serving, by booting it with the failing combination and confirming it never binds the port and logs a message naming `APP_ORIGIN`, `API_ORIGIN`, and `COOKIE_DOMAIN`
+- [x] 2.4 Add `API_ORIGIN` to `server/.env.example` (defaulting to `http://localhost:8080`) and to `docker-compose.yml`'s `server` service, and verify both `go run .` from `server/.env` and `docker compose --profile full up` still start and pass the existing e2e suite
 
 ## 3. Verification across deploy targets
 
