@@ -20,11 +20,45 @@ export function Den({
   selectedId?: string;
   children: (pages: PageNode[]) => ReactNode;
 }) {
-  const { me, pages, refreshPages } = useDen();
+  const { me, pages, refreshPages, retry } = useDen();
   const router = useRouter();
 
   if (me === undefined) {
     return null;
+  }
+  if (me === "error") {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "var(--space-4)",
+          minHeight: "100vh",
+          padding: "var(--space-8)",
+          textAlign: "center",
+        }}
+      >
+        <Bear size={96} sleeping />
+        <p style={{ color: "var(--foreground-muted)" }}>Your account could not be loaded.</p>
+        <button
+          onClick={retry}
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontWeight: 600,
+            padding: "var(--space-3) var(--space-6)",
+            borderRadius: "var(--radius-pill)",
+            background: "var(--accent)",
+            color: "var(--accent-foreground)",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Try again
+        </button>
+      </div>
+    );
   }
   if (me === null) {
     return <SignedOutLanding />;

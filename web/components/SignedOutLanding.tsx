@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_ORIGIN, ApiError, getAuthConfig, login, register } from "@/lib/api";
+import { ApiError, getAuthConfig, login, register } from "@/lib/api";
 import { Bear } from "@/components/mascots/Bear";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -12,6 +12,8 @@ export function SignedOutLanding() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [googleEnabled, setGoogleEnabled] = useState(false);
@@ -28,6 +30,10 @@ export function SignedOutLanding() {
 
     if (mode === "register" && password.length < MIN_PASSWORD_LENGTH) {
       setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+    if (mode === "register" && password !== confirmPassword) {
+      setError("Passwords don't match.");
       return;
     }
 
@@ -73,24 +79,63 @@ export function SignedOutLanding() {
           maxWidth: "320px",
         }}
       >
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete={mode === "register" ? "new-password" : "current-password"}
-          style={inputStyle}
-        />
+        <div style={fieldStyle}>
+          <label htmlFor="email" style={labelStyle}>
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            style={inputStyle}
+          />
+        </div>
+        <div style={fieldStyle}>
+          <label htmlFor="password" style={labelStyle}>
+            Password
+          </label>
+          <div style={passwordWrapperStyle}>
+            <input
+              id="password"
+              type={revealed ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete={mode === "register" ? "new-password" : "current-password"}
+              style={{ ...inputStyle, paddingRight: "6.5rem" }}
+            />
+            <button
+              type="button"
+              onClick={() => setRevealed((r) => !r)}
+              aria-pressed={revealed}
+              style={revealToggleStyle}
+            >
+              {revealed ? "Hide password" : "Show password"}
+            </button>
+          </div>
+        </div>
+        {mode === "register" && (
+          <div style={fieldStyle}>
+            <label htmlFor="confirm-password" style={labelStyle}>
+              Confirm password
+            </label>
+            <input
+              id="confirm-password"
+              type={revealed ? "text" : "password"}
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              style={inputStyle}
+            />
+          </div>
+        )}
         {error && <p style={{ color: "var(--danger)", fontSize: "0.9rem" }}>{error}</p>}
         <button
           type="submit"
@@ -115,6 +160,7 @@ export function SignedOutLanding() {
         type="button"
         onClick={() => {
           setMode(mode === "register" ? "login" : "register");
+          setConfirmPassword("");
           setError(null);
         }}
         style={{
@@ -131,7 +177,7 @@ export function SignedOutLanding() {
 
       {googleEnabled && (
         <a
-          href={`${API_ORIGIN}/auth/google/start`}
+          href="/api/auth/google/start"
           style={{
             fontFamily: "var(--font-ui)",
             fontWeight: 600,
@@ -147,6 +193,37 @@ export function SignedOutLanding() {
     </main>
   );
 }
+
+const fieldStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "var(--space-1)",
+  textAlign: "left",
+};
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: "var(--font-ui)",
+  fontSize: "0.85rem",
+  color: "var(--foreground-muted)",
+};
+
+const passwordWrapperStyle: React.CSSProperties = {
+  position: "relative",
+};
+
+const revealToggleStyle: React.CSSProperties = {
+  position: "absolute",
+  right: "var(--space-2)",
+  top: "50%",
+  transform: "translateY(-50%)",
+  background: "none",
+  border: "none",
+  color: "var(--secondary)",
+  fontFamily: "var(--font-ui)",
+  fontSize: "0.75rem",
+  cursor: "pointer",
+  padding: "var(--space-1) var(--space-2)",
+};
 
 const inputStyle: React.CSSProperties = {
   font: "inherit",

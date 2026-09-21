@@ -5,15 +5,16 @@ import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
-import { getPage, saveDoc } from "@/lib/api";
+import { ApiError, getPage, saveDoc } from "@/lib/api";
+import { isRetryableSaveFailure } from "@/lib/saveFailure";
 
-type SaveStatus = "loading" | "saved" | "saving" | "failed";
+type SaveStatus = "loading" | "saved" | "saving" | "failed" | "rejected" | "signedOut";
 
 const SAVE_DEBOUNCE_MS = 800;
 const RETRY_BASE_MS = 1000;
 const RETRY_MAX_MS = 16000;
 
-function statusLabel(status: SaveStatus): string {
+function statusLabel(status: SaveStatus, rejectionReason: string | null): string {
   switch (status) {
     case "loading":
       return "";
@@ -21,6 +22,10 @@ function statusLabel(status: SaveStatus): string {
       return "Saving…";
     case "failed":
       return "Failed to save — retrying…";
+    case "rejected":
+      return `Could not be saved: ${rejectionReason ?? "unknown reason"}`;
+    case "signedOut":
+      return "Signed out — this change was not saved";
     case "saved":
       return "Saved";
   }
@@ -31,6 +36,7 @@ function statusLabel(status: SaveStatus): string {
 // the save/retry refs by hand on every pageId change.
 export function Editor({ pageId }: { pageId: string }) {
   const [status, setStatus] = useState<SaveStatus>("loading");
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const dirtyRef = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryDelay = useRef(RETRY_BASE_MS);
@@ -66,10 +72,24 @@ export function Editor({ pageId }: { pageId: string }) {
         dirtyRef.current = false;
         setStatus("saved");
       }
-    } catch {
-      setStatus("failed");
-      scheduleSave(retryDelay.current);
-      retryDelay.current = Math.min(retryDelay.current * 2, RETRY_MAX_MS);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        // The session is gone. Stop retrying against it, but don't
+        // navigate -- that's apiFetch's default for reads, not writes (see
+        // design.md) -- a redirect here would silently drop what's on screen.
+        retryDelay.current = RETRY_BASE_MS;
+        setStatus("signedOut");
+      } else if (isRetryableSaveFailure(err)) {
+        setStatus("failed");
+        scheduleSave(retryDelay.current);
+        retryDelay.current = Math.min(retryDelay.current * 2, RETRY_MAX_MS);
+      } else {
+        // This exact request will never succeed -- retrying it forever
+        // would just show "retrying…" over a document that can't be saved.
+        retryDelay.current = RETRY_BASE_MS;
+        setRejectionReason(err instanceof Error ? err.message : "unknown reason");
+        setStatus("rejected");
+      }
     }
   }
 
@@ -98,7 +118,19 @@ export function Editor({ pageId }: { pageId: string }) {
     return () => {
       window.removeEventListener("beforeunload", handler);
       if (saveTimer.current) clearTimeout(saveTimer.current);
+      // The request outlives the component -- an in-flight fetch isn't
+      // cancelled by unmounting -- so fire the pending/retrying save instead
+      // of just dropping its timer. One attempt only: there's no component
+      // left to retry from, so a failure here has nowhere left to go but an
+      // alert (see design.md's "flush on unmount" decision).
+      if (dirtyRef.current) {
+        const doc = latestDoc.current;
+        saveDoc(pageId, doc).catch(() => {
+          window.alert("A change to this page could not be saved.");
+        });
+      }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- remounted per pageId via caller's key
   }, []);
 
   return (
@@ -123,10 +155,15 @@ export function Editor({ pageId }: { pageId: string }) {
             alignSelf: "center",
             fontFamily: "var(--font-ui)",
             fontSize: "0.85rem",
-            color: status === "failed" ? "var(--secondary)" : "var(--foreground-muted)",
+            color:
+              status === "failed"
+                ? "var(--secondary)"
+                : status === "rejected" || status === "signedOut"
+                  ? "var(--danger)"
+                  : "var(--foreground-muted)",
           }}
         >
-          {statusLabel(status)}
+          {statusLabel(status, rejectionReason)}
         </span>
       </div>
       <EditorContent editor={editor} />

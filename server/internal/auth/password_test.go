@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,6 +105,46 @@ func TestRegister_PasswordTooShort(t *testing.T) {
 	}
 }
 
+func TestRegister_MalformedEmail(t *testing.T) {
+	pool := testPool(t)
+	h := newTestPasswordHandlers(pool)
+
+	cases := []string{"", "no-at-sign.example.com", "user@"}
+	for _, email := range cases {
+		rec := doJSON(h.Register, http.MethodPost, "/auth/register", registerRequest{Email: email, Password: "correct-horse"})
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("email %q: status = %d, want %d", email, rec.Code, http.StatusBadRequest)
+		}
+	}
+}
+
+func TestRegister_PasswordTooLong(t *testing.T) {
+	pool := testPool(t)
+	h := newTestPasswordHandlers(pool)
+
+	tooLong := strings.Repeat("a", maxPasswordLength+1)
+	rec := doJSON(h.Register, http.MethodPost, "/auth/register", registerRequest{Email: randomEmail(t), Password: tooLong})
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusBadRequest, rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), "72") {
+		t.Errorf("body = %q, want it to name the limit", rec.Body.String())
+	}
+}
+
+func TestRegister_PasswordAtMaxLength(t *testing.T) {
+	pool := testPool(t)
+	h := newTestPasswordHandlers(pool)
+
+	atLimit := strings.Repeat("a", maxPasswordLength)
+	rec := doJSON(h.Register, http.MethodPost, "/auth/register", registerRequest{Email: randomEmail(t), Password: atLimit})
+
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusNoContent, rec.Body.String())
+	}
+}
+
 func TestLogin_CorrectCredentials(t *testing.T) {
 	pool := testPool(t)
 	h := newTestPasswordHandlers(pool)
@@ -144,6 +185,8 @@ func TestLogin_RejectedCasesLookIdentical(t *testing.T) {
 		"wrong password":       {Email: registeredEmail, Password: "totally-wrong"},
 		"unknown email":        {Email: randomEmail(t), Password: "whatever"},
 		"google-only, no pass": {Email: googleOnlyEmail, Password: "whatever"},
+		"malformed email":      {Email: "not-an-email", Password: "whatever"},
+		"over-long password":   {Email: registeredEmail, Password: strings.Repeat("a", maxPasswordLength+1)},
 	}
 
 	var bodies []string

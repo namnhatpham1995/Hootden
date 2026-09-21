@@ -39,7 +39,7 @@ Prerequisites: Go 1.26+, Node 24+, Docker.
 
 ### Running the full stack in Docker instead
 
-`docker compose --profile full up --build` builds and runs `postgres` + `server` + `web` together — no local Go/Node toolchain needed. Reads the same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL`/`COOKIE_DOMAIN`/`APP_ORIGIN`/`NEXT_PUBLIC_API_ORIGIN` from the shell environment (or a `.env` file at the repo root) rather than the per-service `.env` files above.
+`docker compose --profile full up --build` builds and runs `postgres` + `server` + `web` together — no local Go/Node toolchain needed. Reads the same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL`/`COOKIE_DOMAIN`/`APP_ORIGIN`/`API_ORIGIN`/`NEXT_PUBLIC_API_ORIGIN` from the shell environment (or a `.env` file at the repo root) rather than the per-service `.env` files above.
 
 ### Environment variables
 
@@ -50,9 +50,10 @@ Prerequisites: Go 1.26+, Node 24+, Docker.
 | `PORT` | server | HTTP port, defaults to `8080` |
 | `DATABASE_URL` | server | Postgres connection string |
 | `APP_ORIGIN` | server | Exact frontend origin, echoed back as `Access-Control-Allow-Origin` |
+| `API_ORIGIN` | server | This API's own public origin, as the browser sees it. Required — the server refuses to start if it and `APP_ORIGIN`/`COOKIE_DOMAIN` describe a session cookie that could never reach the app; see [Deploying](#deploying) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | server | Optional — from the Google Cloud OAuth client. Leave unset and only email/password sign-in is offered |
 | `GOOGLE_REDIRECT_URL` | server | Optional, must match the client's authorized redirect URI exactly when Google is configured |
-| `COOKIE_DOMAIN` | server | Empty for a host-only cookie (localhost); `.<domain>` in production so the apex and `api.` subdomain share it |
+| `COOKIE_DOMAIN` | server | Empty for a host-only cookie (localhost); `<domain>` in production (no leading dot) so the apex and `api.` subdomain share it |
 | `NEXT_PUBLIC_API_ORIGIN` | web | Baked into the client bundle at **build time** — the API origin as seen by the browser |
 
 ### Tests
@@ -64,7 +65,9 @@ cd web && npm run test:e2e   # needs the full-stack profile running: docker comp
 
 ## Deploying
 
-The Go and Next.js images (`server/Dockerfile`, `web/Dockerfile`) are identical across every target — only environment variables change. Three ways to run them:
+The Go and Next.js images (`server/Dockerfile`, `web/Dockerfile`) are identical across every target — only environment variables change. Two ways to run them:
+
+**Platform-issued hostnames cannot work, on either path below.** A bare Vercel deployment (`<project>.vercel.app`) and a bare Railway deployment (`<project>.up.railway.app`) are on different registrable domains — `vercel.app` and `up.railway.app` are themselves entries on the Public Suffix List, not something you own a subdomain of. Every request between them is cross-site, so the session cookie — `Secure; SameSite=Lax` by design, not something to relax — is refused by the browser regardless of what `COOKIE_DOMAIN` is set to: a public suffix is not a legal cookie domain, so no value rescues this shape. **You must register a real domain before creating either project.** Vercel preview deployments are also exempt from this fix permanently — each gets a fresh `*.vercel.app` URL per push, so they stay cross-site by construction and sign-in will not work on them; only production behind the custom domain is affected by the steps below.
 
 **Railway + Vercel (managed).** Order matters because the cookie (and the OAuth client, if you use one) both encode the domain:
 
@@ -72,8 +75,8 @@ The Go and Next.js images (`server/Dockerfile`, `web/Dockerfile`) are identical 
 2. Optional: create a Google OAuth client with redirect URI `https://api.<domain>/auth/google/callback`, to offer Google sign-in alongside email/password. Skip this and email/password is the only sign-in method.
 3. Create a Railway project with Postgres; deploy `server/Dockerfile` to it, bind `api.<domain>`.
 4. Create a Vercel project from this repo; Vercel uses its own Next.js build pipeline (not the Dockerfile) — set `NEXT_PUBLIC_API_ORIGIN=https://api.<domain>` as a build-time env var, bind the apex domain.
-5. Set `COOKIE_DOMAIN=.<domain>` and `APP_ORIGIN=https://<domain>` on the Railway service, plus the `GOOGLE_*` variables if you created a client in step 2.
+5. Set `APP_ORIGIN=https://<domain>`, `API_ORIGIN=https://api.<domain>`, and `COOKIE_DOMAIN=<domain>` on the Railway service, plus the `GOOGLE_*` variables if you created a client in step 2. If any of the three describe a session cookie that couldn't reach the app, the server refuses to start rather than deploying broken — see the `API_ORIGIN` row above.
 
 **Self-hosted Docker Compose (VPS or a personal machine).** Same step 1 above for the domain (step 2's Google client is equally optional here), then `docker compose --profile full up -d --build` on the host in place of the Railway/Vercel steps — same images, same migrations, same variable contract. What's different from the managed path: you provide your own TLS termination and reverse proxy (Caddy, nginx, or Traefik) in front of ports `3000` and `8080`, and DNS points both the apex and `api.` at that one host instead of two platforms. What's identical: the container images, the migration path, and every environment variable above.
 
-Either path, `COOKIE_DOMAIN` must be the shared parent of both hosts (e.g. `.hootden.example`) — a host-only cookie set on one won't be sent to the other.
+Either path, `COOKIE_DOMAIN` must be the shared parent of both hosts (e.g. `hootden.example`, no leading dot) — a host-only cookie set on one won't be sent to the other.
