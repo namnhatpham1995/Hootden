@@ -45,10 +45,10 @@ services:
     build:
       context: ./web
       args:
-        # Baked into the client bundle at build time -- must resolve from the
-        # browser, so this is the host-published port, not the `server`
-        # container's compose-network name.
-        NEXT_PUBLIC_API_ORIGIN: ${NEXT_PUBLIC_API_ORIGIN:-http://localhost:8080}
+        # Baked into Next's rewrite manifest at build time -- this resolves
+        # from the `web` container, so use the `server` service on the Compose
+        # network rather than the host-published port.
+        API_PROXY_TARGET: ${API_PROXY_TARGET:-http://server:8080}
     ports:
       - "3000:3000"
     depends_on:

@@ -6,11 +6,11 @@ RUN npm ci
 
 FROM node:24-alpine AS build
 WORKDIR /app
-# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, not
+# The rewrite target is baked into Next's routes manifest at build time, not
 # read at container startup -- so this has to be a build ARG, not a runtime
 # environment: value on the `web` service below.
-ARG NEXT_PUBLIC_API_ORIGIN=http://localhost:8080
-ENV NEXT_PUBLIC_API_ORIGIN=$NEXT_PUBLIC_API_ORIGIN
+ARG API_PROXY_TARGET=http://localhost:8080
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
