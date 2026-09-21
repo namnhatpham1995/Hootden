@@ -1,5 +1,3 @@
-export const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:8080";
-
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -8,16 +6,16 @@ export class ApiError extends Error {
   }
 }
 
-// apiFetch calls the Go API directly (never through a Next.js route
-// handler -- see design.md) with the session cookie attached. A 401 always
-// throws; redirectOn401 additionally sends the caller straight to the
-// signed-out landing screen, for the reads where a dead session should
-// bounce the whole app rather than be handled locally. Off by default --
-// see design.md's "redirect becomes opt-in" -- because most callers (every
-// write) need to keep whatever the person was doing on screen and handle
-// the 401 themselves instead of losing it to a hard navigation.
+// apiFetch sends relative URLs through the Next.js rewrite proxy, with the
+// session cookie attached. A 401 always throws; redirectOn401 additionally
+// sends the caller straight to the signed-out landing screen, for the reads
+// where a dead session should bounce the whole app rather than be handled
+// locally. Off by default -- see design.md's "redirect becomes opt-in" --
+// because most callers (every write) need to keep whatever the person was
+// doing on screen and handle the 401 themselves instead of losing it to a
+// hard navigation.
 async function apiFetch<T>(path: string, init?: RequestInit, opts: { redirectOn401?: boolean } = {}): Promise<T> {
-  const res = await fetch(`${API_ORIGIN}${path}`, {
+  const res = await fetch(`/api${path}`, {
     ...init,
     credentials: "include",
     headers: { "Content-Type": "application/json", ...init?.headers },
@@ -75,7 +73,7 @@ export function login(email: string, password: string): Promise<void> {
 }
 
 export async function getAuthConfig(): Promise<{ googleEnabled: boolean }> {
-  const res = await fetch(`${API_ORIGIN}/auth/config`, { credentials: "include" });
+  const res = await fetch("/api/auth/config", { credentials: "include" });
   if (!res.ok) throw new ApiError(res.status, "failed to load sign-in options");
   return res.json();
 }
