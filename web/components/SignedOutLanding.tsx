@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_ORIGIN, ApiError, getAuthConfig, login, register } from "@/lib/api";
+import { ApiError, getAuthConfig, login, register } from "@/lib/api";
 import { Bear } from "@/components/mascots/Bear";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -177,7 +177,7 @@ export function SignedOutLanding() {
 
       {googleEnabled && (
         <a
-          href={`${API_ORIGIN}/auth/google/start`}
+          href="/api/auth/google/start"
           style={{
             fontFamily: "var(--font-ui)",
             fontWeight: 600,
