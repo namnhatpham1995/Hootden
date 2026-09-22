@@ -29,17 +29,31 @@ func TestAttemptLimiter_OpensRefusesAtThresholdThenLifts(t *testing.T) {
 func TestAttemptLimiter_AllowAttempt_IndependentKeys(t *testing.T) {
 	l := NewAttemptLimiter(1, time.Hour, 10)
 
-	if !l.AllowAttempt("a@example.com", "1.2.3.4") {
+	if !l.AllowAttempt("login", "a@example.com", "1.2.3.4") {
 		t.Fatal("first attempt should be allowed")
 	}
-	if l.AllowAttempt("b@example.com", "1.2.3.4") {
+	if l.AllowAttempt("login", "b@example.com", "1.2.3.4") {
 		t.Fatal("expected refusal: the address key is already at its limit")
 	}
-	if l.AllowAttempt("a@example.com", "9.9.9.9") {
+	if l.AllowAttempt("login", "a@example.com", "9.9.9.9") {
 		t.Fatal("expected refusal: the email key is already at its limit")
 	}
-	if !l.AllowAttempt("c@example.com", "8.8.8.8") {
+	if !l.AllowAttempt("login", "c@example.com", "8.8.8.8") {
 		t.Fatal("a fresh email and a fresh address should still be allowed")
+	}
+}
+
+func TestAttemptLimiter_AllowAttempt_ScopedByEndpoint(t *testing.T) {
+	l := NewAttemptLimiter(1, time.Hour, 10)
+
+	if !l.AllowAttempt("register", "a@example.com", "1.2.3.4") {
+		t.Fatal("first register attempt should be allowed")
+	}
+	if l.AllowAttempt("register", "a@example.com", "1.2.3.4") {
+		t.Fatal("expected refusal: register's own limit for this email is already spent")
+	}
+	if !l.AllowAttempt("login", "a@example.com", "1.2.3.4") {
+		t.Fatal("login should have its own budget for this email, unaffected by register")
 	}
 }
 

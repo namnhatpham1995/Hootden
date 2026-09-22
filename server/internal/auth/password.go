@@ -64,12 +64,12 @@ func (h PasswordHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	email := normalizeEmail(req.Email)
-	if !h.Limiter.AllowAttempt(email, httpapi.ClientAddr(r)) {
-		writeTooManyAttempts(w, h.Limiter)
-		return
-	}
 	if !isValidEmail(email) {
 		httpapi.WriteJSONError(w, http.StatusBadRequest, "invalid email address")
+		return
+	}
+	if !h.Limiter.AllowAttempt("register", email, httpapi.ClientAddr(r)) {
+		writeTooManyAttempts(w, h.Limiter)
 		return
 	}
 	if len(req.Password) < minPasswordLength {
@@ -124,7 +124,7 @@ func (h PasswordHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := normalizeEmail(req.Email)
-	if !h.Limiter.AllowAttempt(email, httpapi.ClientAddr(r)) {
+	if !h.Limiter.AllowAttempt("login", email, httpapi.ClientAddr(r)) {
 		writeTooManyAttempts(w, h.Limiter)
 		return
 	}

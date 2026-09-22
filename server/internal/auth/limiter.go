@@ -61,31 +61,44 @@ func NewLoginAttemptLimiter() *AttemptLimiter {
 }
 
 // AllowAttempt reports whether an attempt from this email and client address
-// may proceed. Both keys are always charged for the attempt -- neither is
-// skipped because the other already refused -- so an attacker rotating one
-// dimension (many emails from one address, or one email from many addresses)
-// still runs into the other.
-func (l *AttemptLimiter) AllowAttempt(email, clientAddr string) bool {
-	emailOK := l.allow("email:" + email)
-	addrOK := l.allow("addr:" + clientAddr)
+// may proceed. scope namespaces the key by endpoint (e.g. "login",
+// "register") so that, say, hammering registration for an email can't spend
+// that email's login budget -- design.md's "Two keys" reasoning is about
+// bcrypt/guessing pressure on login specifically, and doesn't hold if
+// register shares the same counter. Both keys are always charged for the
+// attempt -- neither is skipped because the other already refused -- so an
+// attacker rotating one dimension (many emails from one address, or one
+// email from many addresses) still runs into the other.
+func (l *AttemptLimiter) AllowAttempt(scope, email, clientAddr string) bool {
+	emailOK := l.allow(scope + ":email:" + email)
+	addrOK := l.allow(scope + ":addr:" + clientAddr)
 	return emailOK && addrOK
 }
 
-// allow evicts expired windows, then checks and charges the given key
-// against its own window. A brand-new key is refused rather than allocated
-// once the map is already at maxKeys, so an attacker cycling through
-// distinct keys can't grow it without bound.
+// allow checks and charges the given key against its own window, evicting it
+// inline first if it has already expired. A brand-new key triggers a sweep
+// only when the map is already at maxKeys, since that's the one case an
+// eviction can change the outcome (there's room to admit the key once
+// expired entries are gone) -- so the common case (an existing, live key) is
+// a single map lookup, not a scan of the whole map.
 func (l *AttemptLimiter) allow(key string) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	now := time.Now()
-	l.sweep(now)
 
 	w, ok := l.windows[key]
+	if ok && now.After(w.resetAt) {
+		delete(l.windows, key)
+		ok = false
+	}
+
 	if !ok {
 		if len(l.windows) >= l.maxKeys {
-			return false
+			l.sweep(now)
+			if len(l.windows) >= l.maxKeys {
+				return false
+			}
 		}
 		l.windows[key] = &attemptWindow{count: 1, resetAt: now.Add(l.window)}
 		return true
