@@ -2,9 +2,9 @@
 
 Ordered first because it is the smallest, touches nothing else, and depends on nothing below it.
 
-- [ ] 1.1 Add a periodic removal of expired session rows, started at boot and running on a long interval, and verify with an integration test that a row past `expires_at` is gone after a cycle while an unexpired one remains
-- [ ] 1.2 Verify reaping does not gate expiry — an expired session whose row has not yet been removed is still refused by `ResolveSession` — by asserting the existing expired-session test passes with reaping disabled
-- [ ] 1.3 Verify the reaper stops cleanly on shutdown and logs a failed cycle without terminating the process, since a transient database error must not take the server down
+- [x] 1.1 Add a periodic removal of expired session rows, started at boot and running on a long interval, and verify with an integration test that a row past `expires_at` is gone after a cycle while an unexpired one remains
+- [x] 1.2 Verify reaping does not gate expiry — an expired session whose row has not yet been removed is still refused by `ResolveSession` — by asserting the existing expired-session test passes with reaping disabled
+- [x] 1.3 Verify the reaper stops cleanly on shutdown and logs a failed cycle without terminating the process, since a transient database error must not take the server down
 
 ## 2. Client address resolution
 
