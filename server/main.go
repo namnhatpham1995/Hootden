@@ -51,24 +51,12 @@ func main() {
 		CookieDomain: cfg.CookieDomain,
 		Limiter:      auth.NewLoginAttemptLimiter(),
 	}
-	requireAuth := auth.RequireAuth(pool, cfg.CookieDomain)
+	pageHandlers := page.Handlers{Pool: pool}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", httpapi.Healthz(pool))
-	mux.HandleFunc("GET /auth/config", auth.Config(cfg.GoogleClientID != ""))
-	mux.HandleFunc("GET /auth/google/start", authHandlers.Start)
-	mux.HandleFunc("GET /auth/google/callback", authHandlers.Callback)
-	mux.HandleFunc("POST /auth/register", passwordHandlers.Register)
-	mux.HandleFunc("POST /auth/login", passwordHandlers.Login)
-	mux.HandleFunc("POST /auth/signout", authHandlers.SignOut)
-	mux.Handle("GET /me", requireAuth(workspace.Me(pool)))
-
-	pageHandlers := page.Handlers{Pool: pool}
-	mux.Handle("GET /pages", requireAuth(http.HandlerFunc(pageHandlers.List)))
-	mux.Handle("POST /pages", requireAuth(http.HandlerFunc(pageHandlers.Create)))
-	mux.Handle("GET /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Get)))
-	mux.Handle("PATCH /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Update)))
-	mux.Handle("DELETE /pages/{id}", requireAuth(http.HandlerFunc(pageHandlers.Delete)))
+	for _, rt := range buildRoutes(pool, authHandlers, passwordHandlers, pageHandlers, cfg.GoogleClientID != "", cfg.CookieDomain) {
+		mux.Handle(rt.Method+" "+rt.Path, rt.Handler)
+	}
 
 	var handler http.Handler = mux
 	handler = httpapi.MaxBytes(handler)

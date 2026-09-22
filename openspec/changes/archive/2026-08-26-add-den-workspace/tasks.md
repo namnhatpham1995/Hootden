@@ -103,7 +103,7 @@ Ordered first because the domain is encoded into the OAuth client, the cookie, a
 - [ ] 13.1 Deploy the Go service to Railway (building `server/Dockerfile`) and bind the `api.` subdomain, verifying HTTPS and that migrations ran
 - [ ] 13.2 Deploy the frontend to Vercel (its own build pipeline) bound to the apex domain, verifying it reaches the API with credentials
 - [ ] 13.3 Verify the full flow in iOS Safari with third-party cookies blocked: sign in, create a page, edit, reload, and confirm the session and content persist
-- [ ] 13.4 Audit every route and verify no `GET` endpoint changes state, as the CSRF posture depends on it
+- [x] 13.4 Audit every route and verify no `GET` endpoint changes state, as the CSRF posture depends on it (closed by `harden-auth-surface` task 4.2/4.3: the audit is now an enforced test, `server/main_test.go:TestGetRoutesAreReadOnly`)
 - [ ] 13.5 Verify a second Google account gets its own Den and cannot reach the first account's pages by direct id
 - [ ] 13.6 Run the full-stack Docker Compose profile against the real domain and OAuth client on a VPS (or a personal machine reachable at that domain), and verify sign-in, page CRUD, and autosave all work identically to the Railway/Vercel deploy
 
