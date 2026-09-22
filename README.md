@@ -63,6 +63,10 @@ cd server && go test ./...
 cd web && npm run test:e2e   # needs the full-stack profile running: docker compose --profile full up -d --build
 ```
 
+## Rate limiting
+
+`POST /auth/login` and `POST /auth/register` are each limited to 20 attempts per 15 minutes, counted separately per submitted email and per client address (both must be under the limit), and separately again between login and register so hammering one doesn't spend the other's budget. A refused attempt gets `429` with `Retry-After` before any password is checked. The counters live in the server process only — they reset to zero on every restart, so if you're testing sign-in locally and hit a `429` after restarting the server a few times in a row, that's the counter resetting cleanly, not a bug.
+
 ## Deploying
 
 The Go and Next.js images (`server/Dockerfile`, `web/Dockerfile`) are identical across every target — only environment variables change. Two ways to run them:

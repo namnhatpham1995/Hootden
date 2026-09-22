@@ -21,10 +21,15 @@ type route struct {
 
 // getMutationException is the one GET route allowed to change state: the
 // OAuth provider's redirect target, which must be GET because the provider
-// chooses the method. The protection this exception rests on is Callback's
-// own state-cookie check (see auth.Handlers.Callback), which runs before any
+// chooses the method. TestGetRoutesAreReadOnly (main_test.go) enforces that
+// every other GET route is read-only and that this is the sole exception --
+// a second exception means editing this constant, not adding a line to
+// buildRoutes. The protection this one rests on is Callback's own
+// state-cookie check (see auth.Handlers.Callback), which runs before any
 // code exchange or account creation -- a request that didn't originate from
-// Start is rejected before it can do anything.
+// Start (i.e. wasn't set up by our own redirect) is rejected before it can
+// do anything, so a browser or proxy that merely follows, caches, or
+// prefetches this URL hits the same rejection.
 const getMutationException = "/auth/google/callback"
 
 // buildRoutes is the single source of truth for both the live server's

@@ -35,5 +35,5 @@ Restructuring, no behaviour change. Its own PR so the existing suite passing is 
 
 ## 5. Documentation
 
-- [ ] 5.1 Document the rate limit in the README — that it exists, roughly what it bounds, and that it resets on restart — and verify a self-hoster reading it would not mistake a `429` during their own testing for a bug
-- [ ] 5.2 Record the `GET`-mutation rule and its single exception in `AGENTS.md` or the server's own guidance, pointing at the test that enforces it, and verify the note explains why the exception is safe rather than only that it exists
+- [x] 5.1 Document the rate limit in the README — that it exists, roughly what it bounds, and that it resets on restart — and verify a self-hoster reading it would not mistake a `429` during their own testing for a bug
+- [x] 5.2 Record the `GET`-mutation rule and its single exception in `AGENTS.md` or the server's own guidance, pointing at the test that enforces it, and verify the note explains why the exception is safe rather than only that it exists
