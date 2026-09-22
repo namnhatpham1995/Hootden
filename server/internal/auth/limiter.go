@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+// loginAttemptLimit is sized off the UX requirement (design.md: "a person
+// mistypes a small number of times"), not the attack side -- 20 clears
+// ordinary mistyping with headroom to spare, and also happens to clear the
+// password-auth e2e suite's real call volume (~8 calls, all sharing one
+// client address since Chromium blocks script-set X-Forwarded-For; see that
+// suite's own comment). If either requirement changes, re-derive from the
+// UX case first.
 const (
 	loginAttemptLimit   = 20
 	loginAttemptWindow  = 15 * time.Minute
