@@ -29,9 +29,9 @@ The substance of this change.
 
 Restructuring, no behaviour change. Its own PR so the existing suite passing is the whole review.
 
-- [ ] 4.1 Register routes from a table in `main.go` instead of sequential `mux.Handle` calls, and verify the full server test suite and the Playwright suite pass unchanged
-- [ ] 4.2 Add a test asserting every `GET` route is on an explicit read-only allowlist, with the provider callback named as the sole state-changing exception, and verify the test fails when a state-changing handler is registered as `GET`
-- [ ] 4.3 Verify the callback's existing state-cookie check runs before any credential exchange or account creation, and record that as the protection the exception rests on, closing task 13.4 of `archive/2026-08-26-add-den-workspace`
+- [x] 4.1 Register routes from a table in `main.go` instead of sequential `mux.Handle` calls, and verify the full server test suite and the Playwright suite pass unchanged
+- [x] 4.2 Add a test asserting every `GET` route is on an explicit read-only allowlist, with the provider callback named as the sole state-changing exception, and verify the test fails when a state-changing handler is registered as `GET`
+- [x] 4.3 Verify the callback's existing state-cookie check runs before any credential exchange or account creation, and record that as the protection the exception rests on, closing task 13.4 of `archive/2026-08-26-add-den-workspace`
 
 ## 5. Documentation
 
