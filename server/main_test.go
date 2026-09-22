@@ -10,7 +10,7 @@ import (
 
 func TestGetRoutesAreReadOnly(t *testing.T) {
 	routes := buildRoutes(nil, auth.Handlers{}, auth.PasswordHandlers{}, page.Handlers{}, false, "")
-	if err := checkGetRoutesAreReadOnly(routes, readOnlyGetPaths, getMutationException); err != nil {
+	if err := checkGetRoutesAreReadOnly(routes); err != nil {
 		t.Error(err)
 	}
 }
@@ -19,7 +19,7 @@ func TestGetRoutesAreReadOnly_CatchesStateChangingGET(t *testing.T) {
 	routes := []route{
 		{Method: http.MethodGet, Path: "/pages/{id}/delete", Handler: http.NotFoundHandler()},
 	}
-	if err := checkGetRoutesAreReadOnly(routes, readOnlyGetPaths, getMutationException); err == nil {
-		t.Fatal("expected a GET route absent from both the allowlist and the named exception to be rejected")
+	if err := checkGetRoutesAreReadOnly(routes); err == nil {
+		t.Fatal("expected a GET route not marked ReadOnly and not the named exception to be rejected")
 	}
 }
