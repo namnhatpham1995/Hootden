@@ -2,8 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/namnhatpham1995/Hootden/server/internal/auth"
 	"github.com/namnhatpham1995/Hootden/server/internal/config"
@@ -68,6 +73,26 @@ func main() {
 	handler = httpapi.MaxBytes(handler)
 	handler = httpapi.CORS(cfg.AppOrigin, handler)
 
+	serverCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	reaperDone := auth.StartSessionReaper(serverCtx, pool, auth.SessionReapInterval, log.Default())
+
+	server := &http.Server{Addr: ":" + cfg.Port, Handler: handler}
+	go func() {
+		<-serverCtx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Printf("server shutdown: %v", err)
+		}
+	}()
+
 	log.Printf("listening on :%s", cfg.Port)
-	log.Fatal(http.ListenAndServe(":"+cfg.Port, handler))
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		stop()
+		<-reaperDone
+		log.Fatalf("listen: %v", err)
+	}
+	stop()
+	<-reaperDone
 }
