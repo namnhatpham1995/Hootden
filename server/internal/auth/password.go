@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/mail"
+	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -35,6 +36,14 @@ type PasswordHandlers struct {
 	Pool         *pgxpool.Pool
 	Store        PasswordStore
 	CookieDomain string
+	Limiter      *AttemptLimiter
+}
+
+// writeTooManyAttempts refuses a request the limiter has already charged,
+// before any credential is looked up or compared.
+func writeTooManyAttempts(w http.ResponseWriter, l *AttemptLimiter) {
+	w.Header().Set("Retry-After", strconv.Itoa(int(l.window.Seconds())))
+	httpapi.WriteJSONError(w, http.StatusTooManyRequests, "too many attempts, try again later")
 }
 
 func normalizeEmail(email string) string {
@@ -57,6 +66,10 @@ func (h PasswordHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	email := normalizeEmail(req.Email)
 	if !isValidEmail(email) {
 		httpapi.WriteJSONError(w, http.StatusBadRequest, "invalid email address")
+		return
+	}
+	if !h.Limiter.AllowAttempt("register", email, httpapi.ClientAddr(r)) {
+		writeTooManyAttempts(w, h.Limiter)
 		return
 	}
 	if len(req.Password) < minPasswordLength {
@@ -110,7 +123,13 @@ func (h PasswordHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, passwordHash, err := h.Store.FindUserByEmail(r.Context(), normalizeEmail(req.Email))
+	email := normalizeEmail(req.Email)
+	if !h.Limiter.AllowAttempt("login", email, httpapi.ClientAddr(r)) {
+		writeTooManyAttempts(w, h.Limiter)
+		return
+	}
+
+	userID, passwordHash, err := h.Store.FindUserByEmail(r.Context(), email)
 	if err != nil && !errors.Is(err, ErrAccountNotFound) {
 		httpapi.WriteJSONError(w, http.StatusInternalServerError, "sign-in failed")
 		return

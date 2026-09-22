@@ -49,6 +49,7 @@ func main() {
 		Pool:         pool,
 		Store:        workspace.PasswordStore{Pool: pool},
 		CookieDomain: cfg.CookieDomain,
+		Limiter:      auth.NewLoginAttemptLimiter(),
 	}
 	requireAuth := auth.RequireAuth(pool, cfg.CookieDomain)
 

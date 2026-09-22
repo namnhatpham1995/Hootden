@@ -17,13 +17,13 @@ Small, independently testable, and needed by group 3. Split out so its edge case
 
 The substance of this change.
 
-- [ ] 3.1 Add an in-process fixed-window limiter keyed independently on submitted email and on client address, with a bounded key count and a sweep that evicts expired windows, and verify unit tests cover the window opening, refusing at the threshold, and lifting on its own
-- [ ] 3.2 Verify the limiter cannot grow without bound by driving it with a distinct key per request and confirming eviction holds the key count under its cap and that new keys past the cap are refused rather than allocated
-- [ ] 3.3 Apply the limiter to `POST /auth/login` and `POST /auth/register`, refusing with `429` and a `Retry-After` before the credential is evaluated, and verify no bcrypt comparison runs for a refused attempt
-- [ ] 3.4 Verify the refusal is indistinguishable between an email with an account and one without — same status, same body, same timing within tolerance — so the limit is not an existence oracle, and verify the existing "unknown email is rejected the same way" test still passes
-- [ ] 3.5 Verify a person who mistypes a small number of times and then succeeds is never refused, choosing the threshold from that requirement rather than from the attack side
-- [ ] 3.6 Add a `ponytail:` comment on the limiter naming the in-process ceiling — counters lost on restart, per-instance if a second ever runs — and the Postgres-backed upgrade path
-- [ ] 3.7 Surface the refusal in `SignedOutLanding` as its own message rather than as a failed credential, and verify the person is told they have attempted too many times and can try again later
+- [x] 3.1 Add an in-process fixed-window limiter keyed independently on submitted email and on client address, with a bounded key count and a sweep that evicts expired windows, and verify unit tests cover the window opening, refusing at the threshold, and lifting on its own
+- [x] 3.2 Verify the limiter cannot grow without bound by driving it with a distinct key per request and confirming eviction holds the key count under its cap and that new keys past the cap are refused rather than allocated
+- [x] 3.3 Apply the limiter to `POST /auth/login` and `POST /auth/register`, refusing with `429` and a `Retry-After` before the credential is evaluated, and verify no bcrypt comparison runs for a refused attempt
+- [x] 3.4 Verify the refusal is indistinguishable between an email with an account and one without — same status, same body, same timing within tolerance — so the limit is not an existence oracle, and verify the existing "unknown email is rejected the same way" test still passes
+- [x] 3.5 Verify a person who mistypes a small number of times and then succeeds is never refused, choosing the threshold from that requirement rather than from the attack side
+- [x] 3.6 Add a `ponytail:` comment on the limiter naming the in-process ceiling — counters lost on restart, per-instance if a second ever runs — and the Postgres-backed upgrade path
+- [x] 3.7 Surface the refusal in `SignedOutLanding` as its own message rather than as a failed credential, and verify the person is told they have attempted too many times and can try again later
 
 ## 4. The GET-mutation rule becomes enforceable
 
