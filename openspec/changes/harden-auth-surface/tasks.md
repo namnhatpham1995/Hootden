@@ -10,8 +10,8 @@ Ordered first because it is the smallest, touches nothing else, and depends on n
 
 Small, independently testable, and needed by group 3. Split out so its edge cases get reviewed on their own rather than inside the limiter.
 
-- [ ] 2.1 Add client-address resolution taking the last `X-Forwarded-For` entry, falling back to `RemoteAddr`, and verify table tests cover a forged single-value header, a genuine one-proxy header, a multi-entry header, a malformed header, and no header at all
-- [ ] 2.2 Add a `ponytail:` comment naming the one-trusted-proxy ceiling and the upgrade path, and verify it states what breaks with two chained proxies
+- [x] 2.1 Add client-address resolution taking the last `X-Forwarded-For` entry, falling back to `RemoteAddr`, and verify table tests cover a forged single-value header, a genuine one-proxy header, a multi-entry header, a malformed header, and no header at all
+- [x] 2.2 Add a `ponytail:` comment naming the one-trusted-proxy ceiling and the upgrade path, and verify it states what breaks with two chained proxies
 
 ## 3. Attempt limiting
 
