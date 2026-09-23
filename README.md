@@ -39,7 +39,7 @@ Prerequisites: Go 1.26+, Node 24+, Docker.
 
 ### Running the full stack in Docker instead
 
-`docker compose --profile full up --build` builds and runs `postgres` + `server` + `web` together — no local Go/Node toolchain needed. Reads the same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL`/`COOKIE_DOMAIN`/`APP_ORIGIN`/`API_ORIGIN`/`NEXT_PUBLIC_API_ORIGIN` from the shell environment (or a `.env` file at the repo root) rather than the per-service `.env` files above.
+`docker compose --profile full up --build` builds and runs `postgres` + `server` + `web` together — no local Go/Node toolchain needed. Reads the same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL`/`COOKIE_DOMAIN`/`APP_ORIGIN`/`API_ORIGIN`/`API_PROXY_TARGET` from the shell environment (or a `.env` file at the repo root) rather than the per-service `.env` files above.
 
 ### Environment variables
 
@@ -50,11 +50,11 @@ Prerequisites: Go 1.26+, Node 24+, Docker.
 | `PORT` | server | HTTP port, defaults to `8080` |
 | `DATABASE_URL` | server | Postgres connection string |
 | `APP_ORIGIN` | server | Exact frontend origin, echoed back as `Access-Control-Allow-Origin` |
-| `API_ORIGIN` | server | This API's own public origin, as the browser sees it. Required — the server refuses to start if it and `APP_ORIGIN`/`COOKIE_DOMAIN` describe a session cookie that could never reach the app; see [Deploying](#deploying) |
+| `API_ORIGIN` | server | This API's own public origin, as the browser sees it. Required — the server refuses to start if it and `APP_ORIGIN`/`COOKIE_DOMAIN` describe a session cookie that could never reach the app; see [Deploying](#deploying). On the managed Railway + Vercel target this is set equal to `APP_ORIGIN` (the Vercel origin), since the browser only ever talks to Vercel |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | server | Optional — from the Google Cloud OAuth client. Leave unset and only email/password sign-in is offered |
 | `GOOGLE_REDIRECT_URL` | server | Optional, must match the client's authorized redirect URI exactly when Google is configured |
-| `COOKIE_DOMAIN` | server | Empty for a host-only cookie (localhost); `<domain>` in production (no leading dot) so the apex and `api.` subdomain share it |
-| `NEXT_PUBLIC_API_ORIGIN` | web | Baked into the client bundle at **build time** — the API origin as seen by the browser |
+| `COOKIE_DOMAIN` | server | Empty for a host-only cookie (localhost, or the managed Railway + Vercel target); `<domain>` self-hosted (no leading dot) so the apex and `api.` subdomain share it |
+| `API_PROXY_TARGET` | web | Baked into the routes manifest at **build time** — the origin `/api/*` requests are rewritten to server-side (the Railway origin on the managed target). Defaults to `http://localhost:8080` for local dev |
 
 ### Tests
 
