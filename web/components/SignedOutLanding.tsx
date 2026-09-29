@@ -45,7 +45,14 @@ export function SignedOutLanding() {
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = "/";
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Try again.");
+      // A 429 is a refusal to even check the credential, not a failed one --
+      // told apart from "invalid email or password" so it isn't read as a
+      // typo when it's actually the rate limit.
+      if (err instanceof ApiError && err.status === 429) {
+        setError("Too many attempts. Please wait a bit and try again.");
+      } else {
+        setError(err instanceof ApiError ? err.message : "Something went wrong. Try again.");
+      }
       setSubmitting(false);
     }
   }
