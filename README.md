@@ -39,7 +39,7 @@ Prerequisites: Go 1.26+, Node 24+, Docker.
 
 ### Running the full stack in Docker instead
 
-`docker compose --profile full up --build` builds and runs `postgres` + `server` + `web` together — no local Go/Node toolchain needed. Reads the same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL`/`COOKIE_DOMAIN`/`APP_ORIGIN`/`API_ORIGIN`/`API_PROXY_TARGET` from the shell environment (or a `.env` file at the repo root) rather than the per-service `.env` files above.
+`docker compose --profile full up --build` builds and runs `postgres` + `server` + `web` together — no local Go/Node toolchain needed. Reads the same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URL`/`COOKIE_DOMAIN`/`APP_ORIGIN`/`API_ORIGIN`/`TRUSTED_PROXY_HOPS`/`API_PROXY_TARGET` from the shell environment (or a `.env` file at the repo root) rather than the per-service `.env` files above.
 
 ### Environment variables
 
