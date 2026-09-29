@@ -7,22 +7,32 @@ import (
 )
 
 // ClientAddr identifies the address a request came from, for keying things
-// like a rate limiter.
+// like a rate limiter. trustedHops is how many reverse proxies sit in front
+// of the server, each appending its own view of the peer to
+// X-Forwarded-For: the client is the entry trustedHops from the end, since
+// everything to its left arrived from the client and can be forged. 0 means
+// no proxy -- the header is ignored and the TCP peer is used.
 //
-// ponytail: trusts exactly one reverse proxy in front of the server -- the
-// last X-Forwarded-For entry is taken as that proxy's own view of the
-// client, since only the proxy (not the client) can append to the header on
-// its way in. A second chained proxy breaks this: the client's forged
-// last-entry would then land where the trusted proxy is expected to write,
-// and this function would trust it. Upgrade by validating the header against
-// a configured number of trusted hops (or a trusted CIDR for the immediate
-// peer) before taking the value.
-func ClientAddr(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		entries := strings.Split(xff, ",")
-		if last := strings.TrimSpace(entries[len(entries)-1]); last != "" {
-			return last
-		}
+// A request carrying fewer entries than trustedHops skipped a proxy (e.g.
+// it hit Railway directly instead of via Vercel), so the leftmost entry --
+// written by the first proxy it did pass -- is used instead.
+//
+// ponytail: trusts that every request came through all trustedHops proxies.
+// Production runs Vercel -> Railway (hops 2) but Railway's public hostname
+// is also reachable directly, and there a client-supplied entry lands where
+// Vercel's is expected, so a direct caller can pick its own address key.
+// The per-email key still bounds guessing against any one account. Upgrade
+// by having the Vercel hop attach a shared-secret header and trusting the
+// second entry only when it's present.
+func ClientAddr(r *http.Request, trustedHops int) string {
+	xff := r.Header.Get("X-Forwarded-For")
+	if trustedHops <= 0 || xff == "" {
+		return remoteAddrHost(r.RemoteAddr)
+	}
+	entries := strings.Split(xff, ",")
+	i := max(len(entries)-trustedHops, 0)
+	if addr := strings.TrimSpace(entries[i]); addr != "" {
+		return addr
 	}
 	return remoteAddrHost(r.RemoteAddr)
 }

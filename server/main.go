@@ -50,6 +50,8 @@ func main() {
 		Store:        workspace.PasswordStore{Pool: pool},
 		CookieDomain: cfg.CookieDomain,
 		Limiter:      auth.NewLoginAttemptLimiter(),
+
+		TrustedProxyHops: cfg.TrustedProxyHops,
 	}
 	pageHandlers := page.Handlers{Pool: pool}
 

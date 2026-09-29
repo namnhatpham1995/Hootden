@@ -37,6 +37,9 @@ type PasswordHandlers struct {
 	Store        PasswordStore
 	CookieDomain string
 	Limiter      *AttemptLimiter
+	// TrustedProxyHops is passed to httpapi.ClientAddr to find the client
+	// address the limiter keys on.
+	TrustedProxyHops int
 }
 
 // writeTooManyAttempts refuses a request the limiter has already charged,
@@ -68,7 +71,7 @@ func (h PasswordHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		httpapi.WriteJSONError(w, http.StatusBadRequest, "invalid email address")
 		return
 	}
-	if !h.Limiter.AllowAttempt("register", email, httpapi.ClientAddr(r)) {
+	if !h.Limiter.AllowAttempt("register", email, httpapi.ClientAddr(r, h.TrustedProxyHops)) {
 		writeTooManyAttempts(w, h.Limiter)
 		return
 	}
@@ -124,7 +127,7 @@ func (h PasswordHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := normalizeEmail(req.Email)
-	if !h.Limiter.AllowAttempt("login", email, httpapi.ClientAddr(r)) {
+	if !h.Limiter.AllowAttempt("login", email, httpapi.ClientAddr(r, h.TrustedProxyHops)) {
 		writeTooManyAttempts(w, h.Limiter)
 		return
 	}

@@ -140,3 +140,41 @@ func setEnv(t *testing.T, vars map[string]string) {
 		}
 	})
 }
+
+func TestLoad_TrustedProxyHops(t *testing.T) {
+	tests := []struct {
+		value   string
+		want    int
+		wantErr bool
+	}{
+		{value: "", want: 1},
+		{value: "2", want: 2},
+		{value: "0", want: 0},
+		{value: "-1", wantErr: true},
+		{value: "two", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.value, func(t *testing.T) {
+			setEnv(t, map[string]string{
+				"DATABASE_URL":       "postgres://localhost/hootden",
+				"API_ORIGIN":         "http://localhost:8080",
+				"APP_ORIGIN":         "http://localhost:3000",
+				"COOKIE_DOMAIN":      "",
+				"TRUSTED_PROXY_HOPS": tt.value,
+			})
+			cfg, err := Load()
+			if tt.wantErr {
+				if err == nil || !strings.Contains(err.Error(), "TRUSTED_PROXY_HOPS") {
+					t.Fatalf("err = %v, want an error naming TRUSTED_PROXY_HOPS", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cfg.TrustedProxyHops != tt.want {
+				t.Errorf("TrustedProxyHops = %d, want %d", cfg.TrustedProxyHops, tt.want)
+			}
+		})
+	}
+}
