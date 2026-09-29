@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -35,6 +36,11 @@ type Config struct {
 	// means a host-only cookie, which is what local development against
 	// localhost needs.
 	CookieDomain string
+	// TrustedProxyHops is how many reverse proxies append to X-Forwarded-For
+	// in front of the server (see httpapi.ClientAddr). Defaults to 1; the
+	// managed deploy needs 2 (Vercel's /api rewrite, then Railway's edge);
+	// 0 ignores the header.
+	TrustedProxyHops int
 }
 
 func Load() (Config, error) {
@@ -57,6 +63,11 @@ func Load() (Config, error) {
 	if err := checkCookieReachability(cfg.AppOrigin, cfg.APIOrigin, cfg.CookieDomain); err != nil {
 		return Config{}, err
 	}
+	hops, err := strconv.Atoi(getEnv("TRUSTED_PROXY_HOPS", "1"))
+	if err != nil || hops < 0 {
+		return Config{}, fmt.Errorf("TRUSTED_PROXY_HOPS must be a non-negative integer, got %q", os.Getenv("TRUSTED_PROXY_HOPS"))
+	}
+	cfg.TrustedProxyHops = hops
 	return cfg, nil
 }
 
